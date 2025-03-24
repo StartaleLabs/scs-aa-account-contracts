@@ -24,3 +24,13 @@ crytic-export
 
 # Echidna corpus
 test/invariants/fuzz/echidna_coverage
+
+# Hardhat
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache/
+artifacts/*

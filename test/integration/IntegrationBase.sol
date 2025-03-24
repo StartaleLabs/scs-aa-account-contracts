@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.28;
 
-import {Greeter, IGreeter} from 'contracts/Greeter.sol';
 import {Test} from 'forge-std/Test.sol';
 import {IERC20} from 'forge-std/interfaces/IERC20.sol';
+import {Greeter, IGreeter} from 'src/Greeter.sol';
 
 contract IntegrationBase is Test {
   uint256 internal constant _FORK_BLOCK = 18_920_905;

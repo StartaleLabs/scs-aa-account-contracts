@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.23;
+pragma solidity ^0.8.28;
 
-import {Greeter, IERC20} from 'contracts/Greeter.sol';
 import {CommonBase} from 'forge-std/Base.sol';
+import {Greeter, IERC20} from 'src/Greeter.sol';
 
 contract GreeterSetup is CommonBase {
   Greeter internal _targetContract;

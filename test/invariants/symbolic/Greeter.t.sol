@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.23;
+pragma solidity ^0.8.28;
 
-import {Greeter, IERC20} from 'contracts/Greeter.sol';
+import {Greeter, IERC20} from 'src/Greeter.sol';
 
 import {Test} from 'forge-std/Test.sol';
 import {SymTest} from 'halmos-cheatcodes/src/SymTest.sol'; // See https://github.com/a16z/halmos-cheatcodes?tab=readme-ov-file
