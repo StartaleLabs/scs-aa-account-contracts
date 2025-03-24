@@ -53,7 +53,6 @@
     "chai": "^5.2.0",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
-    "forge-std": "github:foundry-rs/forge-std#1.9.2",
     "halmos-cheatcodes": "github:a16z/halmos-cheatcodes#c0d8655",
     "hardhat": "^2.22.19",
     "hardhat-contract-sizer": "^2.10.0",
