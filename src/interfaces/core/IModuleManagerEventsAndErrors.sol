@@ -92,4 +92,8 @@ interface IModuleManagerEventsAndErrors {
 
   /// @notice Error thrown when the default validator is already installed.
   error DefaultValidatorAlreadyInstalled();
+
+  /// @notice Error thrown when the hook type is invalid.
+  /// @param hookType The invalid hook type.
+  error InvalidHookType(uint256 hookType);
 }
