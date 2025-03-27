@@ -16,3 +16,9 @@
 [submodule "lib/account-abstraction"]
 	path = lib/account-abstraction
 	url = https://github.com/eth-infinitism/account-abstraction
+[submodule "lib/sentinellist"]
+	path = lib/sentinellist
+	url = https://github.com/rhinestonewtf/sentinellist
+[submodule "lib/ExcessivelySafeCall"]
+	path = lib/ExcessivelySafeCall
+	url = https://github.com/nomad-xyz/ExcessivelySafeCall

@@ -1,5 +1,4 @@
 halmos-cheatcodes=node_modules/halmos-cheatcodes
-
 forge-std/=lib/forge-std/src/
 solady/=lib/solady/src/
 @account-abstraction/=lib/account-abstraction/
@@ -7,3 +6,5 @@ solady/=lib/solady/src/
 @openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
 openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
 openzeppelin-contracts/=lib/openzeppelin-contracts/
+sentinellist=lib/sentinellist/src/
+excessively-safe-call=lib/ExcessivelySafeCall/src/

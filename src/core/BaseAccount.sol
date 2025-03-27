@@ -8,7 +8,7 @@ import {IEntryPoint} from 'account-abstraction/interfaces/IEntryPoint.sol';
 /// @notice Implements ERC-4337 and ERC-7579 standards for account management and access control.
 /// @dev Manages entry points and configurations as specified in the ERC-4337 and ERC-7579 documentation.
 /// @author Startale Labs
-/// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ on which this implementation is highly based on.
+/// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ and ERC7579 reference implementation on which this implementation is highly based on.
 contract BaseAccount is IBaseAccount {
   /// @notice Identifier for this implementation on the network
   string internal constant _ACCOUNT_IMPLEMENTATION_ID = 'startale.smart-account.0.0.1';
