@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
 
-/// @title Nexus - IERC4337Account
+/// @title IERC4337Account
 /// @notice This interface defines the necessary validation and execution methods for smart accounts under the ERC-4337 standard.
 /// @dev Provides a structure for implementing custom validation logic and execution methods that comply with ERC-4337 "account abstraction" specs.
 /// The validation method ensures proper signature and nonce verification before proceeding with transaction execution, critical for securing userOps.
