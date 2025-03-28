@@ -8,10 +8,7 @@ import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOper
 /// @dev Provides a structure for implementing custom validation logic and execution methods that comply with ERC-4337 "account abstraction" specs.
 /// The validation method ensures proper signature and nonce verification before proceeding with transaction execution, critical for securing userOps.
 /// Also allows for the optional definition of an execution method to handle transactions post-validation, enhancing flexibility.
-/// @author @livingrockrises | Biconomy | chirag@biconomy.io
-/// @author @aboudjem | Biconomy | adam.boudjemaa@biconomy.io
-/// @author @filmakarov | Biconomy | filipp.makarov@biconomy.io
-/// @author @zeroknots | Rhinestone.wtf | zeroknots.eth
+/// @author Startale
 /// Special thanks to the Solady team for foundational contributions: https://github.com/Vectorized/solady
 interface IERC4337Account {
   /// Validate user's signature and nonce
