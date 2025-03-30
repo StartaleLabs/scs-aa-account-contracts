@@ -13,6 +13,11 @@ uint256 constant VALIDATION_SUCCESS = 0;
 // Value indicating failed validation
 uint256 constant VALIDATION_FAILED = 1;
 
+// Review: Alternate naming
+// Todo: Maybe arrange constants in category of their context
+// uint256 constant SIG_VALIDATION_FAILED_UINT = 1;
+// uint256 constant SIG_VALIDATION_SUCCESS_UINT = 0;
+
 // Module type identifier for Multitype install
 uint256 constant MODULE_TYPE_MULTI = 0;
 
@@ -41,7 +46,6 @@ bytes32 constant EMERGENCY_UNINSTALL_TYPE_HASH = 0xd3ddfc12654178cc44d4a7b6b969c
 // Validation modes
 bytes1 constant MODE_VALIDATION = 0x00;
 bytes1 constant MODE_MODULE_ENABLE = 0x01;
-bytes1 constant MODE_PREP = 0x02;
 
 bytes4 constant SUPPORTS_ERC7739 = 0x77390000;
 bytes4 constant SUPPORTS_ERC7739_V1 = 0x77390001;
