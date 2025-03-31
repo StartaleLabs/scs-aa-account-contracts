@@ -38,6 +38,9 @@ via-ir = true
 fuzz = { runs = 10_000 }
 verbosity = 4
 
+[profile.via-ir]
+via_ir = true
+
 [fuzz]
 runs = 1000
 max_test_rejects = 1_000_000

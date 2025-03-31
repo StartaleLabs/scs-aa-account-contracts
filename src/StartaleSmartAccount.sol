@@ -87,7 +87,7 @@ contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHe
   /// @dev Features Module Enable Mode.
   /// This Module Enable Mode flow is intended for the module acting as the validator
   /// for the user operation that triggers the Module Enable Flow. Otherwise, a call to
-  /// `Nexus.installModule` should be included in `userOp.callData`.
+  /// `IERC7579Account.installModule` should be included in `userOp.callData`.
   function validateUserOp(
     PackedUserOperation calldata op,
     bytes32 userOpHash,
@@ -192,6 +192,8 @@ contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHe
   /// - 4 for Hook
   /// - 8 for 1271 Prevalidation Hook
   /// - 9 for 4337 Prevalidation Hook
+  /// @notice
+  /// If the module is malicious, it can prevent itself from being uninstalled by spending all gas in the onUninstall() method.
   /// @param module The address of the module to uninstall.
   /// @param deInitData De-initialization data for the module.
   /// @dev Ensures that the operation is authorized and valid before proceeding with the uninstallation.
@@ -204,6 +206,7 @@ contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHe
 
     if (moduleTypeId == MODULE_TYPE_VALIDATOR) {
       _uninstallValidator(module, deInitData);
+      _checkInitializedValidators();
     } else if (moduleTypeId == MODULE_TYPE_EXECUTOR) {
       _uninstallExecutor(module, deInitData);
     } else if (moduleTypeId == MODULE_TYPE_FALLBACK) {
@@ -434,6 +437,26 @@ contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHe
   function _authorizeUpgrade(address newImplementation) internal virtual override(UUPSUpgradeable) onlyEntryPointOrSelf {
     if (_amIERC7702()) {
       revert ERC7702AccountCannotBeUpgradedThisWay();
+    }
+  }
+
+  // checks if there's at least one validator initialized
+  function _checkInitializedValidators() internal view {
+    if (!_amIERC7702() && !IValidator(_DEFAULT_VALIDATOR).isInitialized(address(this))) {
+      unchecked {
+        SentinelListLib.SentinelList storage validators = _getAccountStorage().validators;
+        address next = validators.entries[SENTINEL];
+        while (next != ZERO_ADDRESS && next != SENTINEL) {
+          if (IValidator(next).isInitialized(address(this))) {
+            break;
+          }
+          next = validators.getNext(next);
+        }
+        if (next == SENTINEL) {
+          //went through all validators and none was initialized
+          revert CanNotRemoveLastValidator();
+        }
+      }
     }
   }
 

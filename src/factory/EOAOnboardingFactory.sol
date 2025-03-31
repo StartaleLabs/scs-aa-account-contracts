@@ -13,7 +13,7 @@ import {Stakeable} from '../utils/Stakeable.sol';
 /// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ on which this factory implementation is highly based on.
 /// Special thanks to the Solady team for foundational contributions: https://github.com/Vectorized/solady
 contract EOAOnboardingFactory is Stakeable {
-  /// @notice Stores the implementation contract address used to create new Nexus instances.
+  /// @notice Stores the implementation contract address used to create new account instances.
   /// @dev This address is set once upon deployment and cannot be changed afterwards.
   address public immutable ACCOUNT_IMPLEMENTATION;
 
@@ -32,7 +32,7 @@ contract EOAOnboardingFactory is Stakeable {
   error ZeroAddressNotAllowed();
 
   /// @notice Constructor to set the immutable variables.
-  /// @param implementation The address of the Nexus implementation to be used for all deployments.
+  /// @param implementation The address of the smart account implementation to be used for all deployments.
   /// @param factoryOwner The address of the factory owner.
   /// @param ecdsaValidator The address of the K1 Validator module to be used for all deployments.
   /// @param bootstrapper The address of the Bootstrapper module to be used for all deployments.
@@ -62,9 +62,10 @@ contract EOAOnboardingFactory is Stakeable {
     // Compute the salt for deterministic deployment
     bytes32 salt = keccak256(abi.encodePacked(eoaOwner, index));
 
-    // Create the validator configuration using the NexusBootstrap library
-    BootstrapConfig memory validator = BootstrapLib.createSingleConfig(ECDSA_VALIDATOR, abi.encodePacked(eoaOwner));
-    bytes memory initData = BOOTSTRAPPER.getInitWithSingleValidatorCalldata(validator);
+    bytes memory initData = abi.encode(
+      address(BOOTSTRAPPER),
+      abi.encodeCall(BOOTSTRAPPER.initWithSingleValidator, (ECDSA_VALIDATOR, abi.encodePacked(eoaOwner)))
+    );
 
     // Deploy the Smart account using the ProxyLib
     (bool alreadyDeployed, address payable account) = ProxyLib.deployProxy(ACCOUNT_IMPLEMENTATION, salt, initData);
@@ -85,11 +86,10 @@ contract EOAOnboardingFactory is Stakeable {
     // Compute the salt for deterministic deployment
     bytes32 salt = keccak256(abi.encodePacked(eoaOwner, index));
 
-    // Create the validator configuration using the NexusBootstrap library
-    BootstrapConfig memory validator = BootstrapLib.createSingleConfig(ECDSA_VALIDATOR, abi.encodePacked(eoaOwner));
-
-    // Get the initialization data for the Nexus account
-    bytes memory initData = BOOTSTRAPPER.getInitWithSingleValidatorCalldata(validator);
+    bytes memory initData = abi.encode(
+      address(BOOTSTRAPPER),
+      abi.encodeCall(BOOTSTRAPPER.initWithSingleValidator, (ECDSA_VALIDATOR, abi.encodePacked(eoaOwner)))
+    );
 
     // Compute the predicted address using the ProxyLib
     return ProxyLib.predictProxyAddress(ACCOUNT_IMPLEMENTATION, salt, initData);
