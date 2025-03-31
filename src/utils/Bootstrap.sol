@@ -16,6 +16,14 @@ struct BootstrapConfig {
   bytes data;
 }
 
+/// @title Bootstrap Pre-Validation Hook Configuration
+/// @notice Provides configuration for pre-validation hooks.
+struct BootstrapPreValidationHookConfig {
+  uint256 hookType;
+  address module;
+  bytes data;
+}
+
 /// @title Bootstrap
 /// @notice Manages the installation of modules into Smart Account using delegate calls.
 contract Bootstrap is ModuleManager {
@@ -43,20 +51,22 @@ contract Bootstrap is ModuleManager {
   /// @param executors The configuration array for executor modules.
   /// @param hook The configuration for the hook module.
   /// @param fallbacks The configuration array for fallback handler modules.
-  function initNexusWithDefaultValidatorAndOtherModules(
+  function initWithDefaultValidatorAndOtherModules(
     bytes calldata defaultValidatorInitData,
     BootstrapConfig[] calldata executors,
     BootstrapConfig calldata hook,
-    BootstrapConfig[] calldata fallbacks
+    BootstrapConfig[] calldata fallbacks,
+    BootstrapPreValidationHookConfig[] calldata preValidationHooks
   ) external payable {
-    _initWithDefaultValidatorAndOtherModules(defaultValidatorInitData, executors, hook, fallbacks);
+    _initWithDefaultValidatorAndOtherModules(defaultValidatorInitData, executors, hook, fallbacks, preValidationHooks);
   }
 
   function _initWithDefaultValidatorAndOtherModules(
     bytes calldata defaultValidatorInitData,
     BootstrapConfig[] calldata executors,
     BootstrapConfig calldata hook,
-    BootstrapConfig[] calldata fallbacks
+    BootstrapConfig[] calldata fallbacks,
+    BootstrapPreValidationHookConfig[] calldata preValidationHooks
   ) internal _withInitSentinelLists {
     IModule(_DEFAULT_VALIDATOR).onInstall(defaultValidatorInitData);
 
@@ -66,17 +76,26 @@ contract Bootstrap is ModuleManager {
       emit ModuleInstalled(MODULE_TYPE_EXECUTOR, executors[i].module);
     }
 
+    // Initialize fallback handlers
+    for (uint256 i = 0; i < fallbacks.length; i++) {
+      if (fallbacks[i].module == address(0)) continue;
+      _installFallbackHandler(fallbacks[i].module, fallbacks[i].data);
+      emit ModuleInstalled(MODULE_TYPE_FALLBACK, fallbacks[i].module);
+    }
+
     // Initialize hook
     if (hook.module != address(0)) {
       _installHook(hook.module, hook.data);
       emit ModuleInstalled(MODULE_TYPE_HOOK, hook.module);
     }
 
-    // Initialize fallback handlers
-    for (uint256 i = 0; i < fallbacks.length; i++) {
-      if (fallbacks[i].module == address(0)) continue;
-      _installFallbackHandler(fallbacks[i].module, fallbacks[i].data);
-      emit ModuleInstalled(MODULE_TYPE_FALLBACK, fallbacks[i].module);
+    // Initialize pre-validation hooks
+    for (uint256 i; i < preValidationHooks.length; i++) {
+      if (preValidationHooks[i].module == address(0)) continue;
+      _installPreValidationHook(
+        preValidationHooks[i].hookType, preValidationHooks[i].module, preValidationHooks[i].data
+      );
+      emit ModuleInstalled(preValidationHooks[i].hookType, preValidationHooks[i].module);
     }
   }
 
@@ -87,11 +106,11 @@ contract Bootstrap is ModuleManager {
   /// @dev Intended to be called by the starttale account with a delegatecall.
   /// @param validator The address of the validator module.
   /// @param data The initialization data for the validator module.
-  function initWithSingleValidator(IModule validator, bytes calldata data) external payable {
+  function initWithSingleValidator(address validator, bytes calldata data) external payable {
     _initWithSingleValidator(validator, data);
   }
 
-  function _initWithSingleValidator(IModule validator, bytes calldata data) internal _withInitSentinelLists {
+  function _initWithSingleValidator(address validator, bytes calldata data) internal _withInitSentinelLists {
     _installValidator(address(validator), data);
     emit ModuleInstalled(MODULE_TYPE_VALIDATOR, address(validator));
   }
@@ -110,16 +129,18 @@ contract Bootstrap is ModuleManager {
     BootstrapConfig[] calldata validators,
     BootstrapConfig[] calldata executors,
     BootstrapConfig calldata hook,
-    BootstrapConfig[] calldata fallbacks
+    BootstrapConfig[] calldata fallbacks,
+    BootstrapPreValidationHookConfig[] calldata preValidationHooks
   ) external payable {
-    _init(validators, executors, hook, fallbacks);
+    _init(validators, executors, hook, fallbacks, preValidationHooks);
   }
 
   function _init(
     BootstrapConfig[] calldata validators,
     BootstrapConfig[] calldata executors,
     BootstrapConfig calldata hook,
-    BootstrapConfig[] calldata fallbacks
+    BootstrapConfig[] calldata fallbacks,
+    BootstrapPreValidationHookConfig[] calldata preValidationHooks
   ) internal _withInitSentinelLists {
     // Initialize validators
     for (uint256 i = 0; i < validators.length; i++) {
@@ -145,6 +166,15 @@ contract Bootstrap is ModuleManager {
     if (hook.module != address(0)) {
       _installHook(hook.module, hook.data);
       emit ModuleInstalled(MODULE_TYPE_HOOK, hook.module);
+    }
+
+    // Initialize pre-validation hooks
+    for (uint256 i = 0; i < preValidationHooks.length; i++) {
+      if (preValidationHooks[i].module == address(0)) continue;
+      _installPreValidationHook(
+        preValidationHooks[i].hookType, preValidationHooks[i].module, preValidationHooks[i].data
+      );
+      emit ModuleInstalled(preValidationHooks[i].hookType, preValidationHooks[i].module);
     }
   }
 
@@ -179,49 +209,6 @@ contract Bootstrap is ModuleManager {
       _installHook(hook.module, hook.data);
       emit ModuleInstalled(MODULE_TYPE_HOOK, hook.module);
     }
-  }
-
-  // ================================================
-  // ===== EXTERNAL VIEW HELPERS =====
-  // ================================================
-
-  /// @notice Prepares calldata for the init function.
-  /// @param validators The configuration array for validator modules.
-  /// @param executors The configuration array for executor modules.
-  /// @param hook The configuration for the hook module.
-  /// @param fallbacks The configuration array for fallback handler modules.
-  /// @return initData The prepared calldata for init().
-  function getInitNexusCalldata(
-    BootstrapConfig[] calldata validators,
-    BootstrapConfig[] calldata executors,
-    BootstrapConfig calldata hook,
-    BootstrapConfig[] calldata fallbacks
-  ) external view returns (bytes memory initData) {
-    initData = abi.encode(address(this), abi.encodeCall(this.init, (validators, executors, hook, fallbacks)));
-  }
-
-  /// @notice Prepares calldata for the initScoped function.
-  /// @param validators The configuration array for validator modules.
-  /// @param hook The configuration for the hook module.
-  /// @return initData The prepared calldata for initScoped.
-  function getInitScopedCalldata(
-    BootstrapConfig[] calldata validators,
-    BootstrapConfig calldata hook
-  ) external view returns (bytes memory initData) {
-    initData = abi.encode(address(this), abi.encodeCall(this.initScoped, (validators, hook)));
-  }
-
-  /// @notice Prepares calldata for the initWithSingleValidator function.
-  /// @param validator The configuration for the validator module.
-  /// @return initData The prepared calldata for initWithSingleValidator.
-  function getInitWithSingleValidatorCalldata(BootstrapConfig calldata validator)
-    external
-    view
-    returns (bytes memory initData)
-  {
-    initData = abi.encode(
-      address(this), abi.encodeCall(this.initWithSingleValidator, (IModule(validator.module), validator.data))
-    );
   }
 
   /// @dev EIP712 domain name and version.
