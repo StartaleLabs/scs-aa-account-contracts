@@ -9,3 +9,4 @@ openzeppelin-contracts/=lib/openzeppelin-contracts/
 sentinellist=lib/sentinellist/src/
 excessively-safe-call=lib/ExcessivelySafeCall/src/
 erc7739Validator/=lib/erc7739Validator/src/
+solarray/=lib/solarray/src/

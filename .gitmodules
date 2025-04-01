@@ -25,3 +25,6 @@
 [submodule "lib/erc7739Validator"]
 	path = lib/erc7739Validator
 	url = https://github.com/erc7579/erc7739Validator
+[submodule "lib/solarray"]
+	path = lib/solarray
+	url = https://github.com/sablier-labs/solarray
