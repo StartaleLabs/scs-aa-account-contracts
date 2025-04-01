@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 
 /// @title IERC4337Account
 /// @notice This interface defines the necessary validation and execution methods for smart accounts under the ERC-4337 standard.

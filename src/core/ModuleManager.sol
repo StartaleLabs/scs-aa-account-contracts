@@ -29,7 +29,7 @@ import {
 import {EmergencyUninstall} from '../types/Structs.sol';
 
 import {AllStorage} from './AllStorage.sol';
-import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {ExcessivelySafeCall} from 'excessively-safe-call/ExcessivelySafeCall.sol';
 import {SentinelListLib} from 'sentinellist/SentinelList.sol';
 import {ECDSA} from 'solady/utils/ECDSA.sol';

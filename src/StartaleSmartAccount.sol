@@ -36,7 +36,7 @@ import {
 } from './types/Constants.sol';
 
 import {EmergencyUninstall} from './types/Structs.sol';
-import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {SENTINEL, SentinelListLib, ZERO_ADDRESS} from 'sentinellist/SentinelList.sol';
 import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
 

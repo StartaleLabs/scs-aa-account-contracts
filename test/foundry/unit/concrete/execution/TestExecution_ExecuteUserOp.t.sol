@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {MODE_VALIDATION} from '../../../../../src/types/Constants.sol';
 import '../../../shared/TestExecutionBase.t.sol';
-import 'account-abstraction/interfaces/IAccountExecute.sol';
+import '@account-abstraction/interfaces/IAccountExecute.sol';
 
 /// @title TestAccountExecution_ExecuteUserOp
 /// @notice Unit tests for the executeUserOp function in the Account contract
