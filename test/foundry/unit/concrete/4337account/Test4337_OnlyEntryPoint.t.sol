@@ -6,7 +6,7 @@ import {MODE_VALIDATION} from '../../../../../src/types/Constants.sol';
 import '../../../utils/TestBase.sol';
 
 /// @title TestERC4337Account_OnlyEntryPoint
-/// @notice Tests the onlyEntryPoint modifier in Nexus contracts under ERC4337 standards.
+/// @notice Tests the onlyEntryPoint modifier in smart account contracts under ERC4337 standards.
 contract TestERC4337Account_OnlyEntryPoint is TestBase {
   StartaleSmartAccount public account;
   MockValidator public validator;

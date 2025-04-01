@@ -107,7 +107,7 @@ contract TestExecution_ExecuteSingle is TestExecutionBase {
   /// @notice Tests token transfer in single execution
   function test_ExecuteSingle_TokenTransfer() public {
     uint256 transferAmount = 100 * 10 ** token.decimals();
-    // Assuming the Nexus has been funded with tokens in the setUp()
+    // Assuming the account has been funded with tokens in the setUp()
 
     // Encode the token transfer call
     Execution[] memory execution = new Execution[](1);
@@ -117,7 +117,7 @@ contract TestExecution_ExecuteSingle is TestExecutionBase {
     // Prepare and execute the UserOperation
     PackedUserOperation[] memory userOps = buildPackedUserOperation(
       BOB, // Sender of the operation
-      BOB_ACCOUNT, // Nexus executing the operation
+      BOB_ACCOUNT, // account executing the operation
       EXECTYPE_DEFAULT,
       execution,
       address(VALIDATOR_MODULE),

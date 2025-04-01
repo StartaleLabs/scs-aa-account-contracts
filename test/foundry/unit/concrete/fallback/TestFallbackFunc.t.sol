@@ -7,7 +7,7 @@ import '../../../mocks/MockTransferer.sol';
 import '../../../shared/TestModuleManagerBase.t.sol';
 
 /// @title TestFallbackFunction
-/// @notice Tests for handling fallback functions in the Nexus system.
+/// @notice Tests for handling fallback functions in the modular smart account.
 contract TestFallbackFunction is TestModuleManagerBase {
   MockHandler private mockFallbackHandler;
 

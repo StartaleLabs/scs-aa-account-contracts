@@ -17,7 +17,7 @@ contract TestStakeable is TestBase {
     init();
     owner = FACTORY_OWNER.addr;
     stakeable = new Stakeable(owner);
-    entryPoint = IEntryPoint(address(ENTRYPOINT)); // Use the ENTRYPOINT from NexusTest_Base
+    entryPoint = IEntryPoint(address(ENTRYPOINT)); // Use the ENTRYPOINT from test base
   }
 
   /// @notice Tests the addStake function

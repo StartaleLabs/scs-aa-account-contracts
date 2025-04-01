@@ -184,7 +184,7 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
     // Expect the revert with UnsupportedExecType error
     vm.expectRevert(abi.encodeWithSelector(UnsupportedExecType.selector, execType));
 
-    // Call the custom execution via the mock executor, which should trigger the revert in Nexus
+    // Call the custom execution via the mock executor, which should trigger the revert in the smart account
     mockExecutor.customExecuteViaAccount(
       unsupportedMode, BOB_ACCOUNT, address(counter), 0, abi.encodeWithSelector(Counter.incrementNumber.selector)
     );
@@ -216,7 +216,7 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
     // Expect the revert with UnsupportedExecType error
     vm.expectRevert(abi.encodeWithSelector(UnsupportedExecType.selector, execType));
 
-    // Call the custom execution via the mock executor, which should trigger the revert in Nexus
+    // Call the custom execution via the mock executor, which should trigger the revert in smart account
     mockExecutor.customExecuteViaAccount(
       unsupportedMode, BOB_ACCOUNT, address(counter), 0, abi.encodeWithSelector(Counter.incrementNumber.selector)
     );

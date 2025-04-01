@@ -5,7 +5,7 @@ import '../../utils/TestBase.sol';
 import {Vm} from 'forge-std/Vm.sol';
 
 /// @title TestFuzz_AccountFactory_Deployment
-/// @notice Fuzz tests for deploying accounts using the NexusAccountFactory.
+/// @notice Fuzz tests for deploying accounts using the StartaleAccountFactory.
 contract TestFuzz_AccountFactory_Deployment is TestBase {
   function setUp() public {
     init();
