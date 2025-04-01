@@ -37,7 +37,7 @@ import '../../../src/types/Constants.sol';
 import {EIP712} from 'solady/utils/EIP712.sol';
 
 contract TestHelper is CheatCodes, EventsAndErrors {
-  address private constant MAINNET_ENTRYPOINT_ADDRESS = 0x0000000071727De22E5E9d8BAf0edAc6f37da032;
+  address private constant ENTRYPOINT_V7_ADDRESS = 0x0000000071727De22E5E9d8BAf0edAc6f37da032;
   /// @dev `keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")`.
   bytes32 internal constant _DOMAIN_TYPEHASH = 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
 
@@ -141,10 +141,10 @@ contract TestHelper is CheatCodes, EventsAndErrors {
         return;
       }
       ENTRYPOINT = new EntryPoint();
-      vm.etch(address(MAINNET_ENTRYPOINT_ADDRESS), address(ENTRYPOINT).code);
-      ENTRYPOINT = IEntryPoint(MAINNET_ENTRYPOINT_ADDRESS);
+      vm.etch(address(ENTRYPOINT_V7_ADDRESS), address(ENTRYPOINT).code);
+      ENTRYPOINT = IEntryPoint(ENTRYPOINT_V7_ADDRESS);
     } else {
-      ENTRYPOINT = IEntryPoint(MAINNET_ENTRYPOINT_ADDRESS);
+      ENTRYPOINT = IEntryPoint(ENTRYPOINT_V7_ADDRESS);
     }
   }
 
