@@ -18,13 +18,13 @@ import {StartaleSmartAccount} from '../../../src/StartaleSmartAccount.sol';
 import {Bootstrap, BootstrapConfig} from '../../../src/utils/Bootstrap.sol';
 
 // import { MockHook } from "../../../contracts/mocks/MockHook.sol";
-// import { MockHandler } from "../../../contracts/mocks/MockHandler.sol";
-// import { MockExecutor } from "../../../contracts/mocks/MockExecutor.sol";
+// import { MockHandler } from "../../../contracts/mocks/MockHandler.sol";;
 // import { MockDelegateTarget } from "../../../contracts/mocks/MockDelegateTarget.sol";
 // import { MockMultiModule } from "contracts/mocks/MockMultiModule.sol";
 // import { MockPaymaster } from "./../../../contracts/mocks/MockPaymaster.sol";
 // import { MockTarget } from "../../../contracts/mocks/MockTarget.sol";
 
+import {MockExecutor} from '../mocks/MockExecutor.sol';
 import {MockValidator} from '../mocks/MockValidator.sol';
 
 import {EOAOnboardingFactory} from '../../../src/factory/EOAOnboardingFactory.sol';
@@ -71,9 +71,10 @@ contract TestHelper is CheatCodes, EventsAndErrors {
 
   // MockHook internal HOOK_MODULE;
   // MockHandler internal HANDLER_MODULE;
-  // MockExecutor internal EXECUTOR_MODULE;
 
   MockValidator internal VALIDATOR_MODULE;
+  MockExecutor internal EXECUTOR_MODULE;
+
   ECDSAValidator internal DEFAULT_VALIDATOR_MODULE;
   // MockMultiModule internal MULTI_MODULE;
 
@@ -130,7 +131,7 @@ contract TestHelper is CheatCodes, EventsAndErrors {
     FACTORY = new StartaleAccountFactory(address(ACCOUNT_IMPLEMENTATION), address(FACTORY_OWNER.addr));
     // HOOK_MODULE = new MockHook();
     // HANDLER_MODULE = new MockHandler();
-    // EXECUTOR_MODULE = new MockExecutor();
+    EXECUTOR_MODULE = new MockExecutor();
     VALIDATOR_MODULE = new MockValidator();
     // MULTI_MODULE = new MockMultiModule();
   }
