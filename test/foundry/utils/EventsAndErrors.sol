@@ -40,6 +40,7 @@ contract EventsAndErrors {
   error ImplementationAddressCanNotBeZero();
   error ModuleNotWhitelisted(address module);
   error ZeroAddressNotAllowed();
+  error OwnerCannotBeZeroAddress();
   error FactoryNotWhitelisted();
   error InvalidFactoryAddress();
   error InvalidEntryPointAddress();
