@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {IEntryPoint} from 'account-abstraction/interfaces/IEntryPoint.sol';
+import {IEntryPoint} from '@account-abstraction/interfaces/IEntryPoint.sol';
 import {VerifyingPaymaster} from 'account-abstraction/samples/VerifyingPaymaster.sol';
 
 contract MockPaymaster is VerifyingPaymaster {

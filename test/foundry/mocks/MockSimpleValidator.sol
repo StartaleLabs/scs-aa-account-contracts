@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {IValidator} from '../../../src/interfaces/IERC7579Module.sol';
 import {MODULE_TYPE_VALIDATOR, VALIDATION_FAILED, VALIDATION_SUCCESS} from '../../../src/types/Constants.sol';
-import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {ECDSA} from 'solady/utils/ECDSA.sol';
 
 contract MockSimpleValidator is IValidator {

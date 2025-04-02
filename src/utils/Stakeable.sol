@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {IEntryPoint} from 'account-abstraction/interfaces/IEntryPoint.sol';
+import {IEntryPoint} from '@account-abstraction/interfaces/IEntryPoint.sol';
 import {Ownable} from 'solady/auth/Ownable.sol';
 
 interface IStakeable {

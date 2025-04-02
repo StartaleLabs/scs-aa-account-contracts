@@ -67,6 +67,7 @@
     "sort-package-json": "2.10.0",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "viem": "^2.24.3"
   }
 }

@@ -1,8 +1,11 @@
+import * as dotenv from "dotenv";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
 import { HardhatUserConfig } from "hardhat/config";
 import "hardhat-spdx-license-identifier";
 import "hardhat-contract-sizer";
+
+dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -20,6 +23,13 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 1337,
       hardfork: "prague"
+    },
+    minato: {
+      url: process.env.MINATO_RPC_URL || "https://rpc.minato.network",
+      chainId: 1946,
+      accounts: [process.env.PRIVATE_KEY || ""],
+      // gas: 30000000,
+      // gasPrice: "auto"
     }
   },
   spdxLicenseIdentifier: {

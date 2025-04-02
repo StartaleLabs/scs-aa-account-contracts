@@ -8,18 +8,34 @@ import {
   MODULE_TYPE_FALLBACK,
   MODULE_TYPE_HOOK,
   MODULE_TYPE_MULTI,
+  MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+  MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
   MODULE_TYPE_VALIDATOR
 } from '../../../../../src/types/Constants.sol';
+
+import {MockAccountLocker} from '../../../mocks/MockAccountLocker.sol';
+import {MockERC7739PreValidationHook} from '../../../mocks/MockERC7739PreValidationHook.sol';
 import {MockInvalidModule} from '../../../mocks/MockInvalidModule.sol';
+import {MockPreValidationHookMultiplexer} from '../../../mocks/MockPreValidationHookMultiplexer.sol';
+import {MockResourceLockPreValidationHook} from '../../../mocks/MockResourceLockPreValidationHook.sol';
 import '../../../shared/TestModuleManagerBase.t.sol';
 import {Solarray} from 'solarray/Solarray.sol';
 
 /// @title TestModuleManager_InstallModule
 /// @notice Tests for installing and managing modules in a smart account
 contract TestModuleManager_InstallModule is TestModuleManagerBase {
+  MockPreValidationHookMultiplexer private hookMultiplexer;
+  MockResourceLockPreValidationHook private resourceLockHook;
+  MockERC7739PreValidationHook private erc7739Hook;
+  MockAccountLocker private accountLocker;
   /// @notice Sets up the base environment for the module management tests
+
   function setUp() public {
     setUpModuleManagerBase();
+    accountLocker = new MockAccountLocker();
+    hookMultiplexer = new MockPreValidationHookMultiplexer();
+    erc7739Hook = new MockERC7739PreValidationHook(address(hookMultiplexer));
+    resourceLockHook = new MockResourceLockPreValidationHook(address(accountLocker), address(hookMultiplexer));
   }
 
   /// @notice Tests successful installation of a module
@@ -62,6 +78,60 @@ contract TestModuleManager_InstallModule is TestModuleManagerBase {
       abi.encodeWithSelector(IModuleManager.installModule.selector, MODULE_TYPE_VALIDATOR, address(mockValidator), '');
 
     installModule(callData, MODULE_TYPE_VALIDATOR, address(mockValidator), EXECTYPE_DEFAULT);
+  }
+
+  function test_InstallPreValidationHooks_Success() public {
+    // Install account locker first
+    bytes memory accountLockerInstallCallData =
+      abi.encodeWithSelector(IModuleManager.installModule.selector, MODULE_TYPE_HOOK, address(accountLocker), '');
+    installModule(accountLockerInstallCallData, MODULE_TYPE_HOOK, address(accountLocker), EXECTYPE_DEFAULT);
+    // Install hooks for 4337
+    address[] memory hooks4337 = new address[](1);
+    hooks4337[0] = address(resourceLockHook);
+    bytes[] memory hookData4337 = new bytes[](1);
+    hookData4337[0] = 'foo';
+
+    // Install hooks for 1271
+    address[] memory hooks1271 = new address[](2);
+    hooks1271[0] = address(resourceLockHook);
+    hooks1271[1] = address(erc7739Hook);
+    bytes[] memory hookData1271 = new bytes[](2);
+    hookData1271[0] = 'foo';
+    hookData1271[1] = 'bar';
+
+    // Install 4337 hooks
+    bytes memory installData4337 = abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, hooks4337, hookData4337);
+    bytes memory installCallData4337 = abi.encodeWithSelector(
+      IModuleManager.installModule.selector,
+      MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+      address(hookMultiplexer),
+      installData4337
+    );
+    installModule(
+      installCallData4337, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, address(hookMultiplexer), EXECTYPE_DEFAULT
+    );
+
+    // Install 1271 hooks
+    bytes memory installData1271 = abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, hooks1271, hookData1271);
+    bytes memory installCallData1271 = abi.encodeWithSelector(
+      IModuleManager.installModule.selector,
+      MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+      address(hookMultiplexer),
+      installData1271
+    );
+    installModule(
+      installCallData1271, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, address(hookMultiplexer), EXECTYPE_DEFAULT
+    );
+
+    // Verify multiplexer is installed for both types
+    assertTrue(
+      BOB_ACCOUNT.isModuleInstalled(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, address(hookMultiplexer), ''),
+      '4337 multiplexer should be installed'
+    );
+    assertTrue(
+      BOB_ACCOUNT.isModuleInstalled(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, address(hookMultiplexer), ''),
+      '1271 multiplexer should be installed'
+    );
   }
 
   /// @notice Tests successful installation of an executor module

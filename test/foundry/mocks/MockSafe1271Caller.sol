@@ -5,8 +5,9 @@ import {IERC7579Account} from '../../../src/interfaces/IERC7579Account.sol';
 import {IModule} from '../../../src/interfaces/IERC7579Module.sol';
 import {EncodedModuleTypes} from '../../../src/lib/ModuleTypeLib.sol';
 import '../../../src/types/Constants.sol';
+
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {MessageHashUtils} from '@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol';
-import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
 import {ECDSA} from 'solady/utils/ECDSA.sol';
 import {SignatureCheckerLib} from 'solady/utils/SignatureCheckerLib.sol';
 

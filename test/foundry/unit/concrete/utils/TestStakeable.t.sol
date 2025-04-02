@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Stakeable} from '../../../../../src/utils/Stakeable.sol';
 import '../../../utils/TestBase.sol';
-import {IEntryPoint, IStakeManager} from 'account-abstraction/interfaces/IEntryPoint.sol';
+import {IEntryPoint, IStakeManager} from '@account-abstraction/interfaces/IEntryPoint.sol';
 
 /// @title TestStakeable
 /// @notice Unit tests for the Stakeable contract
