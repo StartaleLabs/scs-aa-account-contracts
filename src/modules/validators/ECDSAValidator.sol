@@ -12,7 +12,7 @@ import {
   VALIDATION_FAILED,
   VALIDATION_SUCCESS
 } from '../../types/Constants.sol';
-import {PackedUserOperation} from '@account-abstraction/contracts/core/UserOperationLib.sol';
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {ERC7739Validator} from 'erc7739Validator/ERC7739Validator.sol';
 import {ECDSA} from 'solady/utils/ECDSA.sol';
 

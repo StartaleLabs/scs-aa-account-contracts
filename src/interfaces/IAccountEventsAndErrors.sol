@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {PackedUserOperation} from 'account-abstraction/interfaces/PackedUserOperation.sol';
+import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 
 /// @title Events and Errors
 /// @notice Defines common errors for the the smart account.

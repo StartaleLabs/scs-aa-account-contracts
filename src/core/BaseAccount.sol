@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 import {IBaseAccount} from '../interfaces/core/IBaseAccount.sol';
-import {IEntryPoint} from 'account-abstraction/interfaces/IEntryPoint.sol';
+import {IEntryPoint} from '@account-abstraction/interfaces/IEntryPoint.sol';
 
 /// @title BaseAccount
 /// @notice Implements ERC-4337 and ERC-7579 standards for account management and access control.
