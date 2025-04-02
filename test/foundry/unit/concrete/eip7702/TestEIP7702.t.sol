@@ -278,14 +278,13 @@ contract TestEIP7702 is TestBase {
     assertTrue(valueTarget.balance == value);
   }
 
-  ///  Review
-
-  //   function test_amIERC7702_success() public {
-  //     Exposed7702SmartAccount exposed7702 = new Exposed7702SmartAccount(
-  //       address(ENTRYPOINT), address(DEFAULT_VALIDATOR_MODULE), abi.encodePacked(address(0xEeEe))
-  //     );
-  //     address eip7702account = address(0x7702acc7702acc7702acc7702acc);
-  //     vm.etch(eip7702account, abi.encodePacked(bytes3(0xef0100), bytes20(address(exposed7702))));
-  //     assertTrue(IExposed7702SmartAccount(eip7702account).amIERC7702());
-  //   }
+  // Note: only works on prague hardfork
+  function test_amIERC7702_success() public {
+    Exposed7702SmartAccount exposed7702 = new Exposed7702SmartAccount(
+      address(ENTRYPOINT), address(DEFAULT_VALIDATOR_MODULE), abi.encodePacked(address(0xEeEe))
+    );
+    address eip7702account = address(0x7702acc7702acc7702acc7702acc);
+    vm.etch(eip7702account, abi.encodePacked(bytes3(0xef0100), bytes20(address(exposed7702))));
+    assertTrue(IExposed7702SmartAccount(eip7702account).amIERC7702());
+  }
 }

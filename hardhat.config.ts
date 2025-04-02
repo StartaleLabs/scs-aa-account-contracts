@@ -8,7 +8,7 @@ const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.28",
     settings: {
-      evmVersion: "cancun",
+      evmVersion: "prague",
       viaIR: true,
       optimizer: {
         enabled: true,
@@ -19,7 +19,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 1337,
-      hardfork: "cancun"
+      hardfork: "prague"
     }
   },
   spdxLicenseIdentifier: {
