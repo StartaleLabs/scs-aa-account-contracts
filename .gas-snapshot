@@ -1,4 +1,3 @@
-IntegrationGreeter:test_Greet() (gas: 35237)
 ModeLibTest:test_encodeDecodeBatch_Success() (gas: 4443)
 ModeLibTest:test_encodeDecodeSingle_Success() (gas: 4285)
 TestAccountConfig_AccountId:test_WhenCheckingTheAccountID() (gas: 10039)
