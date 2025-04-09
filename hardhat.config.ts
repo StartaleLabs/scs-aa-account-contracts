@@ -19,6 +19,9 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  sourcify: {
+    enabled: true,
+  },
   networks: {
     hardhat: {
       chainId: 1337,
@@ -31,6 +34,21 @@ const config: HardhatUserConfig = {
       // gas: 30000000,
       // gasPrice: "auto"
     }
+  },
+  etherscan: {
+    apiKey: {
+      'soneium-minato': 'empty'
+    },
+    customChains: [
+      {
+        network: "soneium-minato",
+        chainId: 1946,
+        urls: {
+          apiURL: "https://soneium-minato.blockscout.com/api",
+          browserURL: "https://soneium-minato.blockscout.com"
+        }
+      }
+    ]
   },
   spdxLicenseIdentifier: {
     overwrite: false,

@@ -48,21 +48,26 @@ contract Bootstrap is ModuleManager {
   /// @notice Initializes the account with the default validator and other modules.
   /// @dev Intended to be called by the Smart Account with a delegatecall.
   /// @param defaultValidatorInitData The initialization data for the default validator module.
+  /// @param validators The configuration array for validator modules.
   /// @param executors The configuration array for executor modules.
   /// @param hook The configuration for the hook module.
   /// @param fallbacks The configuration array for fallback handler modules.
   function initWithDefaultValidatorAndOtherModules(
     bytes calldata defaultValidatorInitData,
+    BootstrapConfig[] calldata validators,
     BootstrapConfig[] calldata executors,
     BootstrapConfig calldata hook,
     BootstrapConfig[] calldata fallbacks,
     BootstrapPreValidationHookConfig[] calldata preValidationHooks
   ) external payable {
-    _initWithDefaultValidatorAndOtherModules(defaultValidatorInitData, executors, hook, fallbacks, preValidationHooks);
+    _initWithDefaultValidatorAndOtherModules(
+      defaultValidatorInitData, validators, executors, hook, fallbacks, preValidationHooks
+    );
   }
 
   function _initWithDefaultValidatorAndOtherModules(
     bytes calldata defaultValidatorInitData,
+    BootstrapConfig[] calldata validators,
     BootstrapConfig[] calldata executors,
     BootstrapConfig calldata hook,
     BootstrapConfig[] calldata fallbacks,
@@ -70,6 +75,14 @@ contract Bootstrap is ModuleManager {
   ) internal _withInitSentinelLists {
     IModule(_DEFAULT_VALIDATOR).onInstall(defaultValidatorInitData);
 
+    // Install multiple validators other than the default validator
+    for (uint256 i; i < validators.length; i++) {
+      if (validators[i].module == address(0)) continue;
+      _installValidator(validators[i].module, validators[i].data);
+      emit ModuleInstalled(MODULE_TYPE_VALIDATOR, validators[i].module);
+    }
+
+    // Install multiple executors
     for (uint256 i = 0; i < executors.length; i++) {
       if (executors[i].module == address(0)) continue;
       _installExecutor(executors[i].module, executors[i].data);
@@ -104,7 +117,7 @@ contract Bootstrap is ModuleManager {
   // ================================================
   /// @notice Initializes the Smart Account with a single validator.
   /// @dev Intended to be called by the starttale account with a delegatecall.
-  /// @param validator The address of the validator module.
+  /// @param validator The address of the validator module. Should not be the default validator.
   /// @param data The initialization data for the validator module.
   function initWithSingleValidator(address validator, bytes calldata data) external payable {
     _initWithSingleValidator(validator, data);
@@ -121,7 +134,7 @@ contract Bootstrap is ModuleManager {
 
   /// @notice Initializes the startale Smart Account with multiple modules.
   /// @dev Intended to be called by the Smart Account with a delegatecall.
-  /// @param validators The configuration array for validator modules.
+  /// @param validators The configuration array for validator modules. Should not include the default validator.
   /// @param executors The configuration array for executor modules.
   /// @param hook The configuration for the hook module.
   /// @param fallbacks The configuration array for fallback handler modules.
@@ -184,7 +197,7 @@ contract Bootstrap is ModuleManager {
 
   /// @notice Initializes the Smart Account with a scoped set of modules.
   /// @dev Intended to be called by the startale smart account with a delegatecall.
-  /// @param validators The configuration array for validator modules.
+  /// @param validators The configuration array for validator modules. Should not be the default validator.
   /// @param hook The configuration for the hook module.
   function initScoped(BootstrapConfig[] calldata validators, BootstrapConfig calldata hook) external payable {
     _initScoped(validators, hook);
@@ -192,7 +205,7 @@ contract Bootstrap is ModuleManager {
 
   /// @notice Initializes the Smart account with a scoped set of modules.
   /// @dev Intended to be called by the startale smart account with a delegatecall.
-  /// @param validators The configuration array for validator modules.
+  /// @param validators The configuration array for validator modules. Should not be the default validator.
   /// @param hook The configuration for the hook module.
   function _initScoped(
     BootstrapConfig[] calldata validators,
