@@ -17,6 +17,26 @@ interface IModuleManagerEventsAndErrors {
   /// @param module The address of the uninstalled module.
   event ModuleUninstalled(uint256 moduleTypeId, address module);
 
+  /// @notice Emitted when a pre-validation hook uninstallation fails.
+  /// @param hook The address of the pre-validation hook.
+  /// @param data The data of the pre-validation hook.
+  event PreValidationHookUninstallFailed(address hook, bytes data);
+
+  /// @notice Emitted when a validator uninstallation fails.
+  /// @param validator The address of the validator.
+  /// @param data The data of the validator.
+  event ValidatorUninstallFailed(address validator, bytes data);
+
+  /// @notice Emitted when an executor uninstallation fails.
+  /// @param executor The address of the executor.
+  /// @param data The data of the executor.
+  event ExecutorUninstallFailed(address executor, bytes data);
+
+  /// @notice Emitted when a hook uninstallation fails.
+  /// @param hook The address of the hook.
+  /// @param data The data of the hook.
+  event HookUninstallFailed(address hook, bytes data);
+
   /// @notice Thrown when attempting to remove the last validator.
   error CanNotRemoveLastValidator();
 
