@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.29;
 
 import {
   IHook, IPreValidationHookERC1271, IPreValidationHookERC4337
