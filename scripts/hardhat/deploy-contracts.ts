@@ -5,7 +5,7 @@ import { encodePacked } from 'viem';
 const ENTRY_POINT_V7 = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 export const irrelevantOwner = "0x2cf491602ad22944D9047282aBC00D3e52F56B37";
 export const EOAOnboardingFactoryOwner = "0x2cf491602ad22944D9047282aBC00D3e52F56B37";
-
+export const StartaleAccountFactoryOwner = "0x2cf491602ad22944D9047282aBC00D3e52F56B37";
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
@@ -82,6 +82,18 @@ async function main() {
     await eoaOnboardingFactory.waitForDeployment();
     const eoaOnboardingFactoryAddress = await eoaOnboardingFactory.getAddress();
     console.log("EOAOnboardingFactory deployed to:", eoaOnboardingFactoryAddress);
+
+
+    // Deploy StartaleAccountFactory
+    console.log("\nDeploying StartaleAccountFactory...");
+    const StartaleAccountFactory = await ethers.getContractFactory("StartaleAccountFactory");
+    const startaleAccountFactory = await StartaleAccountFactory.deploy(
+      startaleSmartAccountAddress,
+      StartaleAccountFactoryOwner
+    );
+    await startaleAccountFactory.waitForDeployment();
+    const startaleAccountFactoryAddress = await startaleAccountFactory.getAddress();
+    console.log("StartaleAccountFactory deployed to:", startaleAccountFactoryAddress);
 
   } catch (error: any) {
     console.error("Deployment failed with error:", error);
