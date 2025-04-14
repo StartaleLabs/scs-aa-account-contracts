@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.29;
 
 import {StartaleSmartAccount} from '../../../../../src/StartaleSmartAccount.sol';
 import {MODE_VALIDATION} from '../../../../../src/types/Constants.sol';

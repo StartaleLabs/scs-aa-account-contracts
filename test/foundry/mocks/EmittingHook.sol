@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {IModule} from '../../../src/interfaces/IERC7579Module.sol';
 import {EncodedModuleTypes} from '../../../src/lib/ModuleTypeLib.sol';

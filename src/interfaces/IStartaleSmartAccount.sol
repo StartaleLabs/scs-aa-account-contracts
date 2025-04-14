@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.29;
 
 import {IAccountEventsAndErrors} from './IAccountEventsAndErrors.sol';
 import {IERC4337Account} from './IERC4337Account.sol';
