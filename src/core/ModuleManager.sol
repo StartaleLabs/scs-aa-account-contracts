@@ -27,6 +27,7 @@ import {
   MODULE_TYPE_VALIDATOR
 } from '../types/Constants.sol';
 import {EmergencyUninstall} from '../types/Structs.sol';
+import {SENTINEL} from 'sentinellist/SentinelList.sol';
 
 import {AllStorage} from './AllStorage.sol';
 import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
@@ -231,6 +232,22 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     );
   }
 
+  /// Review: _tryUninstallValidators
+  /// @dev Uninstalls all validators from the smart account.
+  /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
+  function _tryUninstallValidators() internal {
+    SentinelListLib.SentinelList storage $valdiators = _getAccountStorage().validators;
+    address validator = $valdiators.getNext(SENTINEL);
+    while (validator != SENTINEL) {
+      try IValidator(validator).onUninstall('') {}
+      catch {
+        emit ValidatorUninstallFailed(validator, '');
+      }
+      validator = $valdiators.getNext(validator);
+    }
+    $valdiators.popAll();
+  }
+
   /// @dev Installs a new executor module after checking if it matches the required module type.
   /// @param executor The address of the executor module to be installed.
   /// @param data Initialization data to configure the executor upon installation.
@@ -249,6 +266,22 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     executor.excessivelySafeCall(
       gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData)
     );
+  }
+
+  /// Review: _tryUninstallExecutors
+  /// @dev Uninstalls all executors from the smart account.
+  /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
+  function _tryUninstallExecutors() internal {
+    SentinelListLib.SentinelList storage $executors = _getAccountStorage().executors;
+    address executor = $executors.getNext(SENTINEL);
+    while (executor != SENTINEL) {
+      try IExecutor(executor).onUninstall('') {}
+      catch {
+        emit ExecutorUninstallFailed(executor, '');
+      }
+      executor = $executors.getNext(executor);
+    }
+    $executors.popAll();
   }
 
   /// @dev Installs a hook module, ensuring no other hooks are installed before proceeding.
@@ -274,6 +307,19 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
       _uninstallPreValidationHook(hook, hookType, data);
     }
     hook.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data));
+  }
+
+  /// Review: _tryUninstallHook
+  /// @dev Uninstalls a hook module.
+  /// @param hook The address of the hook to be uninstalled.
+  function _tryUninstallHook(address hook) internal virtual {
+    if (hook != address(0)) {
+      try IHook(hook).onUninstall('') {}
+      catch {
+        emit HookUninstallFailed(hook, '');
+      }
+      _setHook(address(0));
+    }
   }
 
   /// @dev Sets the current hook in the storage to the specified address.
@@ -363,6 +409,24 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
   }
 
   // Review: _tryUninstallPreValidationHook
+  function _tryUninstallPreValidationHook(address hook, uint256 hookType) internal virtual {
+    if (hook == address(0)) return;
+    if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
+      try _getAccountStorage().preValidationHookERC1271.onUninstall('') {}
+      catch {
+        emit PreValidationHookUninstallFailed(hook, '');
+      }
+      _setPreValidationHook(hookType, address(0));
+    } else if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
+      try _getAccountStorage().preValidationHookERC4337.onUninstall('') {}
+      catch {
+        emit PreValidationHookUninstallFailed(hook, '');
+      }
+      _setPreValidationHook(hookType, address(0));
+    } else {
+      revert InvalidHookType(hookType);
+    }
+  }
 
   /// @dev Sets the current pre-validation hook in the storage to the specified address, based on the hook type.
   /// @param hookType The type of the pre-validation hook.

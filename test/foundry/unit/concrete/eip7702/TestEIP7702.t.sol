@@ -11,6 +11,8 @@ import {MODE_VALIDATION, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337} from '../../../
 import {Exposed7702SmartAccount, IExposed7702SmartAccount} from '../../../mocks/Exposed7702SmartAccount.sol';
 import {MockDelegateTarget} from '../../../mocks/MockDelegateTarget.sol';
 import {MockExecutor} from '../../../mocks/MockExecutor.sol';
+
+import {MockHook} from '../../../mocks/MockHook.sol';
 import {MockPreValidationHook} from '../../../mocks/MockPreValidationHook.sol';
 import {MockTarget} from '../../../mocks/MockTarget.sol';
 import {MockTransferer} from '../../../mocks/MockTransferer.sol';
@@ -286,5 +288,35 @@ contract TestEIP7702 is TestBase {
     address eip7702account = address(0x7702acc7702acc7702acc7702acc);
     vm.etch(eip7702account, abi.encodePacked(bytes3(0xef0100), bytes20(address(exposed7702))));
     assertTrue(IExposed7702SmartAccount(eip7702account).amIERC7702());
+  }
+
+  function test_onRedelegation() public {
+    address account = test_initializeAndExecSingle();
+    MockHook mockHook = new MockHook();
+    vm.startPrank(address(ENTRYPOINT));
+    IStartaleSmartAccount(account).installModule(MODULE_TYPE_HOOK, address(mockHook), '');
+    vm.stopPrank();
+    assertTrue(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_VALIDATOR, address(mockValidator), ''));
+    assertTrue(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_EXECUTOR, address(mockExecutor), ''));
+    assertTrue(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_HOOK, address(mockHook), ''));
+    // storage is cleared
+    vm.startPrank(address(account));
+    IStartaleSmartAccount(account).onRedelegation();
+    assertFalse(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_VALIDATOR, address(mockValidator), ''));
+    assertFalse(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_EXECUTOR, address(mockExecutor), ''));
+    assertFalse(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_HOOK, address(mockHook), ''));
+    vm.stopPrank();
+
+    // account is properly initialized to install modules again
+    vm.startPrank(address(ENTRYPOINT));
+
+    IStartaleSmartAccount(account).installModule(MODULE_TYPE_VALIDATOR, address(mockValidator), '');
+    IStartaleSmartAccount(account).installModule(MODULE_TYPE_EXECUTOR, address(mockExecutor), '');
+    IStartaleSmartAccount(account).installModule(MODULE_TYPE_HOOK, address(mockHook), '');
+
+    vm.stopPrank();
+    assertTrue(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_VALIDATOR, address(mockValidator), ''));
+    assertTrue(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_EXECUTOR, address(mockExecutor), ''));
+    assertTrue(IStartaleSmartAccount(account).isModuleInstalled(MODULE_TYPE_HOOK, address(mockHook), ''));
   }
 }

@@ -3,11 +3,13 @@ pragma solidity ^0.8.28;
 
 import {BaseAccount} from './core/BaseAccount.sol';
 
+import {ERC7779Adapter} from './core/ERC7779Adapter.sol';
 import {ExecutionHelper} from './core/ExecutionHelper.sol';
 import {ModuleManager} from './core/ModuleManager.sol';
 import {IValidator} from './interfaces/IERC7579Module.sol';
 import {IStartaleSmartAccount} from './interfaces/IStartaleSmartAccount.sol';
 import {ExecutionLib} from './lib/ExecutionLib.sol';
+import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
 
 import {Initializable} from './lib/Initializable.sol';
 import {
@@ -45,7 +47,14 @@ import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
 /// @dev Comprehensive suite of methods for managing smart accounts, integrating module management, execution management, and upgradability via UUPS.
 /// @author Startale Labs
 /// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ on which this implementation is highly based on.
-contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHelper, ModuleManager, UUPSUpgradeable {
+contract StartaleSmartAccount is
+  IStartaleSmartAccount,
+  BaseAccount,
+  ExecutionHelper,
+  ModuleManager,
+  ERC7779Adapter,
+  UUPSUpgradeable
+{
   using ModeLib for ExecutionMode;
   using ExecutionLib for bytes;
   using NonceLib for uint256;
@@ -273,6 +282,10 @@ contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHe
   function _initializeAccount(bytes calldata initData) internal {
     require(initData.length >= 24, InvalidInitData());
 
+    if (_amIERC7702()) {
+      _addStorageBase(ACCOUNT_STORAGE_LOCATION);
+    }
+
     address bootstrap;
     bytes calldata bootstrapCall;
 
@@ -290,6 +303,21 @@ contract StartaleSmartAccount is IStartaleSmartAccount, BaseAccount, ExecutionHe
     if (!_amIERC7702()) {
       require(isInitialized(), AccountNotInitialized());
     }
+  }
+
+  /// @dev Uninstalls all validators, executors, hooks, and pre-validation hooks.
+  /// Review: _onRedelegation
+  function _onRedelegation() internal override {
+    _tryUninstallValidators();
+    _tryUninstallExecutors();
+    _tryUninstallHook(_getHook());
+    _tryUninstallPreValidationHook(
+      _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271), MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+    );
+    _tryUninstallPreValidationHook(
+      _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337), MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+    );
+    _initSentinelLists();
   }
 
   /// @notice Validates a signature according to ERC-1271 standards.
