@@ -20,6 +20,7 @@ contract StartaleAccountFactory is Stakeable, IStartaleAccountFactory {
   constructor(address implementation_, address owner_) Stakeable(owner_) {
     require(implementation_ != address(0), ImplementationAddressCanNotBeZero());
     require(owner_ != address(0), ZeroAddressNotAllowed());
+    require(implementation_.code.length > 0, ImplementationNotDeployed());
     ACCOUNT_IMPLEMENTATION = implementation_;
   }
 

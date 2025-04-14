@@ -21,6 +21,9 @@ interface IStartaleAccountFactory {
   /// @notice Error thrown when the implementation address is zero.
   error ImplementationAddressCanNotBeZero();
 
+  /// @notice Error thrown when the implementation is not deployed.
+  error ImplementationNotDeployed();
+
   /// @notice Creates a new Startale Account with initialization data.
   /// @param initData Initialization data to be called on the new Smart Account.
   /// @param salt Unique salt for the Smart Account creation.

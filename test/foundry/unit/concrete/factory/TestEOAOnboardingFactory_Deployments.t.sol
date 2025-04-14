@@ -33,7 +33,7 @@ contract TestEOAOnboardingFactory_Deployments is TestBase {
 
   /// @notice Tests if the constructor correctly initializes the factory with the given implementation, K1 Validator, and Bootstrapper addresses.
   function test_ConstructorInitializesFactory() public {
-    address implementation = address(0x123);
+    address implementation = address(ACCOUNT_IMPLEMENTATION);
     address k1Validator = address(0x456);
     Bootstrap bootstrapperInstance =
       new Bootstrap(address(DEFAULT_VALIDATOR_MODULE), abi.encodePacked(address(0xeEeEeEeE)));

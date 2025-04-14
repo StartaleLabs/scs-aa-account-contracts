@@ -31,6 +31,9 @@ contract EOAOnboardingFactory is Stakeable {
   /// @notice Error thrown when a zero address is provided for the implementation, ECDSA validator, or bootstrapper.
   error ZeroAddressNotAllowed();
 
+  /// @notice Error thrown when the implementation is not deployed.
+  error ImplementationNotDeployed();
+
   /// @notice Constructor to set the immutable variables.
   /// @param implementation The address of the smart account implementation to be used for all deployments.
   /// @param factoryOwner The address of the factory owner.
@@ -49,6 +52,7 @@ contract EOAOnboardingFactory is Stakeable {
       ),
       ZeroAddressNotAllowed()
     );
+    require(implementation.code.length > 0, ImplementationNotDeployed());
     ACCOUNT_IMPLEMENTATION = implementation;
     ECDSA_VALIDATOR = ecdsaValidator;
     BOOTSTRAPPER = bootstrapper;
