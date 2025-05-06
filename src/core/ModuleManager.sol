@@ -774,8 +774,8 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
       // 0xf23a6e61: `onERC1155Received(address,address,uint256,uint256,bytes)`.
       // 0xbc197c81: `onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)`.
       if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) {
-        mstore(0x20, s) // Store `msg.sig`.
-        return(0x3c, 0x20) // Return `msg.sig`.
+        mstore(0x00, shl(224, s)) // Store msg.sig left-aligned in scratch space memory[0:32]
+        return(0x00, 0x20) // Return clean 32-byte value for msg.sig
       }
     }
     // if there was no handler and it is not the onERCXXXReceived call, revert
