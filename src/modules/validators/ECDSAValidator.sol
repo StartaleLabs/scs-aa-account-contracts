@@ -309,7 +309,8 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    * @return The recovered signer address
    */
   function _recoverSigner(bytes32 _hash, bytes calldata _signature) internal view returns (address) {
-    return _hash.tryRecoverCalldata(_signature);
+    // Use recoverCalldata which reverts on invalid signature, preventing address(0) bypass.
+    return _hash.recoverCalldata(_signature);
   }
 
   /**
