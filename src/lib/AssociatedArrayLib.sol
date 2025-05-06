@@ -4,6 +4,8 @@ pragma solidity ^0.8.29;
 library AssociatedArrayLib {
   using AssociatedArrayLib for *;
 
+  uint256 constant MAX_ARRAY_LENGTH = 127;
+
   struct Array {
     uint256 _spacer;
   }
@@ -21,9 +23,12 @@ library AssociatedArrayLib {
   }
 
   error AssociatedArray_OutOfBounds(uint256 index);
+  error AssociatedArray_LengthExceeded(uint256 length);
 
   function add(Bytes32Array storage s, address account, bytes32 value) internal {
     if (!_contains(s._inner, account, value)) {
+      uint256 currentLength = _length(s._inner, account);
+      if (currentLength >= MAX_ARRAY_LENGTH) revert AssociatedArray_LengthExceeded(currentLength);
       _push(s._inner, account, value);
     }
   }
@@ -33,6 +38,8 @@ library AssociatedArrayLib {
   }
 
   function push(Bytes32Array storage s, address account, bytes32 value) internal {
+    uint256 currentLength = _length(s._inner, account);
+    if (currentLength >= MAX_ARRAY_LENGTH) revert AssociatedArray_LengthExceeded(currentLength);
     _push(s._inner, account, value);
   }
 
@@ -46,6 +53,8 @@ library AssociatedArrayLib {
 
   function add(UintArray storage s, address account, uint256 value) internal {
     if (!_contains(s._inner, account, bytes32(value))) {
+      uint256 currentLength = _length(s._inner, account);
+      if (currentLength >= MAX_ARRAY_LENGTH) revert AssociatedArray_LengthExceeded(currentLength);
       _push(s._inner, account, bytes32(value));
     }
   }
@@ -55,6 +64,8 @@ library AssociatedArrayLib {
   }
 
   function push(UintArray storage s, address account, uint256 value) internal {
+    uint256 currentLength = _length(s._inner, account);
+    if (currentLength >= MAX_ARRAY_LENGTH) revert AssociatedArray_LengthExceeded(currentLength);
     _push(s._inner, account, bytes32(value));
   }
 
@@ -68,6 +79,8 @@ library AssociatedArrayLib {
 
   function add(AddressArray storage s, address account, address value) internal {
     if (!_contains(s._inner, account, bytes32(uint256(uint160(value))))) {
+      uint256 currentLength = _length(s._inner, account);
+      if (currentLength >= MAX_ARRAY_LENGTH) revert AssociatedArray_LengthExceeded(currentLength);
       _push(s._inner, account, bytes32(uint256(uint160(value))));
     }
   }
@@ -77,6 +90,8 @@ library AssociatedArrayLib {
   }
 
   function push(AddressArray storage s, address account, address value) internal {
+    uint256 currentLength = _length(s._inner, account);
+    if (currentLength >= MAX_ARRAY_LENGTH) revert AssociatedArray_LengthExceeded(currentLength);
     _push(s._inner, account, bytes32(uint256(uint160(value))));
   }
 
