@@ -100,6 +100,7 @@ contract MockValidator is ERC7739Validator {
     return owner == address(0) ? smartAccount : owner;
   }
 
+  /// @notice In practise should be designed to decode only necessary parameters and ignore or revert on excessive trailing data
   function onInstall(bytes calldata data) external {
     smartAccountOwners[msg.sender] = address(bytes20(data));
   }
