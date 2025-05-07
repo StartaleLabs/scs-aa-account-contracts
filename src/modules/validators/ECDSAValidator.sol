@@ -63,6 +63,12 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    */
   event OwnerRegistered(address indexed account, address indexed owner);
 
+  /**
+   * @notice Emitted when an owner is removed for an account
+   * @param account The smart account address
+   */
+  event OwnerRemoved(address indexed account);
+
   // Storage
   /**
    * @notice Mapping of smart account addresses to their respective owner addresses
@@ -108,6 +114,7 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
     }
 
     delete smartAccountOwners[msg.sender];
+    emit OwnerRemoved(msg.sender);
     _safeSenders.removeAll(msg.sender);
   }
 
@@ -138,6 +145,7 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
     }
 
     smartAccountOwners[msg.sender] = _newOwner;
+    emit OwnerRegistered(msg.sender, _newOwner);
   }
 
   /**

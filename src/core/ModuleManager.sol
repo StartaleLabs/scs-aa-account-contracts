@@ -233,9 +233,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     // Perform the removal first
     validators.pop(prev, validator);
 
-    validator.excessivelySafeCall(
+    (bool success, bytes memory returnData) = validator.excessivelySafeCall(
       gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData)
     );
+    if (!success) {
+      emit ExternalCallFailed(
+        validator, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData), returnData
+      );
+    }
   }
 
   /// Review: _tryUninstallValidators Might as well not call onUninstall() at all
@@ -270,9 +275,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   function _uninstallExecutor(address executor, bytes calldata data) internal virtual {
     (address prev, bytes memory disableModuleData) = abi.decode(data, (address, bytes));
     _getAccountStorage().executors.pop(prev, executor);
-    executor.excessivelySafeCall(
+    (bool success, bytes memory returnData) = executor.excessivelySafeCall(
       gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData)
     );
+    if (!success) {
+      emit ExternalCallFailed(
+        executor, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData), returnData
+      );
+    }
   }
 
   /// Review: _tryUninstallExecutors Might as well not call onUninstall() at all
@@ -314,7 +324,11 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     {
       _uninstallPreValidationHook(hook, hookType, data);
     }
-    hook.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data));
+    (bool success, bytes memory returnData) =
+      hook.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data));
+    if (!success) {
+      emit ExternalCallFailed(hook, abi.encodeWithSelector(IModule.onUninstall.selector, data), returnData);
+    }
   }
 
   /// Review: _tryUninstallHook
@@ -341,9 +355,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
 
       if (address(handler.handler) == address(0)) continue;
 
-      handler.handler.excessivelySafeCall(
+      (bool success, bytes memory returnData) = handler.handler.excessivelySafeCall(
         gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, abi.encodePacked(selector))
       );
+      if (!success) {
+        emit ExternalCallFailed(
+          handler.handler, abi.encodeWithSelector(IModule.onUninstall.selector, abi.encodePacked(selector)), returnData
+        );
+      }
 
       ds.fallbacks[selector] = FallbackHandler(address(0), CallType.wrap(0x00));
     }
@@ -479,7 +498,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
       }
     }
 
-    fallbackHandler.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:]));
+    (bool success, bytes memory returnData) = fallbackHandler.excessivelySafeCall(
+      gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:])
+    );
+    if (!success) {
+      emit ExternalCallFailed(
+        fallbackHandler, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:]), returnData
+      );
+    }
   }
 
   /// @dev Installs a pre-validation hook module, ensuring no other pre-validation hooks are installed before proceeding.
@@ -523,12 +549,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
         emit PreValidationHookUninstallFailed(hook, '');
       }
       _setPreValidationHook(hookType, address(0));
+      emit ModuleUninstalled(hookType, hook);
     } else if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
       try _getAccountStorage().preValidationHookERC4337.onUninstall('') {}
       catch {
         emit PreValidationHookUninstallFailed(hook, '');
       }
       _setPreValidationHook(hookType, address(0));
+      emit ModuleUninstalled(hookType, hook);
     } else {
       revert InvalidHookType(hookType);
     }
