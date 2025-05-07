@@ -312,7 +312,9 @@ contract StartaleSmartAccount is
   }
 
   /// @dev Uninstalls all validators, executors, hooks, and pre-validation hooks.
-  /// Review: _onRedelegation
+  /// @notice It is worth noting that, onRedelegation() does not obligate the account to completely wipe out it’s storage.
+  /// @notice It is an optional action for the account where it could uninitialize the storage variables as much as it can to provide clean storage for new wallet.
+  /// Review: _onRedelegation. If ERC authors agrees with the change then we could have bytes calldata context as param.
   function _onRedelegation() internal override {
     _tryUninstallValidators();
     _tryUninstallExecutors();
@@ -324,6 +326,7 @@ contract StartaleSmartAccount is
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337), MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
     );
     _tryUninstallFallbacks();
+    // Review: If we maintain banned selectors then clear them as well.
     _initSentinelLists();
   }
 

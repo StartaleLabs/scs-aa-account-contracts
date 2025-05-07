@@ -238,7 +238,8 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     );
   }
 
-  /// Review: _tryUninstallValidators
+  /// Review: _tryUninstallValidators Might as well not call onUninstall() at all
+  /// Review: separate internal method can be added that accepts an array of data.
   /// @dev Uninstalls all validators from the smart account.
   /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
   function _tryUninstallValidators() internal {
@@ -274,7 +275,8 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     );
   }
 
-  /// Review: _tryUninstallExecutors
+  /// Review: _tryUninstallExecutors Might as well not call onUninstall() at all
+  /// Review: separate internal method can be added that accepts an array of data.
   /// @dev Uninstalls all executors from the smart account.
   /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
   function _tryUninstallExecutors() internal {
