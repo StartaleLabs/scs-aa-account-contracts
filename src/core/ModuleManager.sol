@@ -371,14 +371,73 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     // Extract the initialization data from the provided parameters.
     bytes memory initData = params[5:];
 
-    // Revert if the selector is either `onInstall(bytes)` (0x6d61fe70) or `onUninstall(bytes)` (0x8a91b0e3) or explicit bytes(0).
+    // Revert if the selector is one of the banned selectors
+    // `onInstall(bytes)` (0x6d61fe70) or `onUninstall(bytes)` (0x8a91b0e3) or explicit bytes(0).
+    // Major selectors from ERC-7579, ERC-721, ERC-1155, ERC-1271 and ERC-4337
+    // Majority of startale account native selectors
     // These selectors are explicitly forbidden to prevent security vulnerabilities.
+
     // Allowing these selectors would enable unauthorized users to uninstall and reinstall critical modules.
     // If a validator module is uninstalled and reinstalled without proper authorization, it can compromise
     // the account's security and integrity. By restricting these selectors, we ensure that the fallback handler
     // cannot be manipulated to disrupt the expected behavior and security of the account.
+
+    // List of selectors
+
+    // IERC7579Module
+    // bytes4(0x6d61fe70) - onInstall(bytes)
+    // bytes4(0x8a91b0e3) - onUninstall(bytes)
+    // bytes4(0xecd05961) - isModuleType(uint256)
+    // bytes4(0xd60b347f) - isInitialized()
+    // bytes4(0x7a0468b7) - preValidationHookERC1271()
+    // bytes4(0xe24f8f93) - preValidationHookERC4337()
+    // bytes4(0x97003203) - validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
+    // bytes4(0xf551e2ee) - isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata data)
+
+    // IHook
+    // bytes4(0xd68f6025) - preCheck()
+    // bytes4(0x173bf7da) - postCheck()
+
+    // IValidator
+    // bytes4(0x97003203) - validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
+    // bytes4(0xf551e2ee) - isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata data)
+
+    // bytes4(0) - empty bytes
+
+    // ERC-4337
+    // bytes4(0xee219423) - simulateValidation(PackedUserOperation calldata userOp, bytes32 userOpHash)
+    // bytes4(0x570e1a36) - createSender(address)
+    // bytes4(0x19822f7c) - validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    // bytes4(0x52b7512c) - validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    // bytes4(0xb760faf9) - depositTo(address to, uint256 amount)
+    // bytes4(0x8dd7712f) - executeUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
+
+    // Startale IERC7579Account
+    // bytes4(0x1626ba7e) - isValidSignature(bytes32 hash, bytes calldata signature)
+    // bytes4(0x4b6a1419) - initializeAccount(bytes calldata initData)
+    // bytes4(0xf2dc691d) - supportsModule(uint256 moduleTypeId)
+    // bytes4(0xd03c7914) - supportsExecutionMode(ExecutionMode mode)
+    // bytes4(0x9cfd7cff) - accountId()
+    // bytes4(0xe9ae5c53) - execute(ExecutionMode mode, bytes calldata executionCalldata)
+    // bytes4(0xd691c964) - executeFromExecutor(ExecutionMode mode, bytes calldata executionCalldata)
+    // bytes4(0x9517e29f) - installModule(uint256 moduleTypeId, address module, bytes calldata initData)
+    // bytes4(0xa71763a8) - uninstallModule(uint256 moduleTypeId, address module, bytes calldata deInitData)
+    // bytes4(0x112d3a7d) - isModuleInstalled(uint256 moduleTypeId, address module, bytes calldata additionalContext)
+
     require(
-      !(selector == bytes4(0x6d61fe70) || selector == bytes4(0x8a91b0e3) || selector == bytes4(0)),
+      // BAN ALL ABOVE SELECTORS
+      !(
+        selector == bytes4(0x6d61fe70) || selector == bytes4(0x8a91b0e3) || selector == bytes4(0xecd05961)
+          || selector == bytes4(0xd60b347f) || selector == bytes4(0x7a0468b7) || selector == bytes4(0xe24f8f93)
+          || selector == bytes4(0x97003203) || selector == bytes4(0xf551e2ee) || selector == bytes4(0xd68f6025)
+          || selector == bytes4(0x173bf7da) || selector == bytes4(0x97003203) || selector == bytes4(0xf551e2ee)
+          || selector == bytes4(0xee219423) || selector == bytes4(0x570e1a36) || selector == bytes4(0x19822f7c)
+          || selector == bytes4(0x52b7512c) || selector == bytes4(0xb760faf9) || selector == bytes4(0x8dd7712f)
+          || selector == bytes4(0x1626ba7e) || selector == bytes4(0x4b6a1419) || selector == bytes4(0xf2dc691d)
+          || selector == bytes4(0xd03c7914) || selector == bytes4(0x9cfd7cff) || selector == bytes4(0xe9ae5c53)
+          || selector == bytes4(0xd691c964) || selector == bytes4(0x9517e29f) || selector == bytes4(0xa71763a8)
+          || selector == bytes4(0x112d3a7d)
+      ),
       FallbackSelectorForbidden()
     );
 
