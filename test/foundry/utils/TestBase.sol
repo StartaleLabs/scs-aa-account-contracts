@@ -27,7 +27,7 @@ import {EntryPoint} from 'account-abstraction/core/EntryPoint.sol';
 
 import '../../../src/lib/ExecutionLib.sol';
 import '../../../src/lib/ModeLib.sol';
-import '../../../src/lib/ModuleTypeLib.sol';
+import './ModuleTypeLib.sol';
 
 // ==========================
 // Interface Imports
@@ -74,8 +74,8 @@ import '../mocks/Counter.sol';
 // Additional Contract Imports
 // ==========================
 
-import './../../../src/lib/BootstrapLib.sol';
 import './../../../src/utils/Bootstrap.sol';
+import './BootstrapLib.sol';
 
 // ==========================
 // Sentinel List Helper

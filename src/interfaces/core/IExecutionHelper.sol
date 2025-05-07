@@ -9,7 +9,7 @@ import {ExecType, ExecutionMode} from '../../lib/ModeLib.sol';
 /// Special thanks to the ERC7579 authors and reference implementation on which this implementation is highly based on.
 interface IExecutionHelper {
   /// @notice Event emitted when a transaction fails to execute successfully.
-  event TryExecuteUnsuccessful(bytes callData, bytes result);
+  event TryExecuteUnsuccessful(address target, bytes callData, bytes result);
 
   /// @notice Event emitted when a transaction fails to execute successfully.
   event TryDelegateCallUnsuccessful(bytes callData, bytes result);

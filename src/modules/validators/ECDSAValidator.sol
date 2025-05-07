@@ -173,6 +173,8 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
 
   /**
    * @notice ISessionValidator interface for smart session
+   * @notice This function is meant to be used as a stateless validator's sig verification function,
+   * where sig is provided along with an onwer to check algorithm and verify agaisnt each other.
    * @param _hash The hash of the data to validate
    * @param _sig The signature data
    * @param _data The data to validate against (owner address in this case)

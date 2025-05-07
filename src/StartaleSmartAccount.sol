@@ -107,12 +107,7 @@ contract StartaleSmartAccount is
     address validator;
     PackedUserOperation memory userOp = op;
 
-    if (op.nonce.isValidateMode()) {
-      // do nothing special. This is introduced
-      // to quickly identify the most commonly used
-      // mode which is validate mode
-      // and avoid checking two above conditions
-    } else if (op.nonce.isModuleEnableMode()) {
+    if (op.nonce.isModuleEnableMode()) {
       // if it is module enable mode, we need to enable the module first
       // and get the cleaned signature
       (bool enableModeSigValid, bytes calldata userOpSignature) = _enableMode(userOpHash, op.signature);
@@ -172,7 +167,7 @@ contract StartaleSmartAccount is
   /// @dev Only callable by the EntryPoint. Decodes the user operation calldata, skipping the first four bytes, and executes the inner call.
   function executeUserOp(PackedUserOperation calldata userOp, bytes32) external payable virtual onlyEntryPoint withHook {
     bytes calldata callData = userOp.callData[4:];
-    (bool success, bytes memory innerCallRet) = address(this).delegatecall(callData);
+    (bool success,) = address(this).delegatecall(callData);
     if (!success) {
       revert ExecutionFailed();
     }
@@ -340,6 +335,7 @@ contract StartaleSmartAccount is
     // Handle potential ERC7739 support detection request
     if (signature.length == 0) {
       // Forces the compiler to optimize for smaller bytecode size.
+      // checking if the hash equals to 0x7739773977397739773977397739773977397739773977397739773977397739
       if (uint256(hash) == (~signature.length / 0xffff) * 0x7739) {
         return checkERC7739Support(hash, signature);
       }

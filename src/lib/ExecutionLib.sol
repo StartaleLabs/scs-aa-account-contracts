@@ -8,8 +8,6 @@ import {Execution} from '../types/Structs.sol';
 /// Helper Library for decoding Execution calldata
 /// malloc for memory allocation is bad for gas. use this assembly instead
 library ExecutionLib {
-  error ERC7579DecodingError();
-
   function get2771CallData(bytes calldata cd) internal view returns (bytes memory callData) {
     /// @solidity memory-safe-assembly
     (cd);

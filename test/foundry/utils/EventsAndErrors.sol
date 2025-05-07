@@ -17,7 +17,7 @@ contract EventsAndErrors {
   );
   event PreCheckCalled();
   event PostCheckCalled();
-  event TryExecuteUnsuccessful(bytes callData, bytes result);
+  event TryExecuteUnsuccessful(address target, bytes callData, bytes result);
   event TryDelegateCallUnsuccessful(bytes callData, bytes result);
   event EmergencyHookUninstallRequest(address hook, uint256 timestamp);
   event EmergencyHookUninstallRequestReset(address hook, uint256 timestamp);

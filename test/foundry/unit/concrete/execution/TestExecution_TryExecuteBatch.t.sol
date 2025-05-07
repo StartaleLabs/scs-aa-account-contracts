@@ -46,7 +46,9 @@ contract TestExecution_TryExecuteBatch is TestExecutionBase {
       buildPackedUserOperation(BOB, BOB_ACCOUNT, EXECTYPE_TRY, executions, address(VALIDATOR_MODULE), 0);
 
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
     ENTRYPOINT.handleOps(userOps, payable(BOB.addr));
 
     assertEq(
@@ -67,7 +69,9 @@ contract TestExecution_TryExecuteBatch is TestExecutionBase {
     // Execute batch operation
     prank(address(ENTRYPOINT));
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
 
     BOB_ACCOUNT.execute(ModeLib.encodeTryBatch(), abi.encode(executions));
 
@@ -89,7 +93,9 @@ contract TestExecution_TryExecuteBatch is TestExecutionBase {
       buildPackedUserOperation(BOB, BOB_ACCOUNT, EXECTYPE_TRY, executions, address(VALIDATOR_MODULE), 0);
 
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[0].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[0].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
     ENTRYPOINT.handleOps(userOps, payable(BOB.addr));
   }
 

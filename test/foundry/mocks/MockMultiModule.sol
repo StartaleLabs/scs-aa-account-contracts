@@ -5,9 +5,10 @@ import {IERC7579Account} from '../../../src/interfaces/IERC7579Account.sol';
 import {IModule} from '../../../src/interfaces/IERC7579Module.sol';
 import {ExecutionLib} from '../../../src/lib/ExecutionLib.sol';
 import {ModeLib} from '../../../src/lib/ModeLib.sol';
-import {EncodedModuleTypes} from '../../../src/lib/ModuleTypeLib.sol';
+
 import '../../../src/types/Constants.sol';
 import {Execution} from '../../../src/types/Structs.sol';
+import {EncodedModuleTypes} from '../utils/ModuleTypeLib.sol';
 
 import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {MessageHashUtils} from '@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol';

@@ -2,8 +2,9 @@
 pragma solidity ^0.8.29;
 
 import {IModule} from '../../../src/interfaces/IERC7579Module.sol';
-import {EncodedModuleTypes} from '../../../src/lib/ModuleTypeLib.sol';
+
 import '../../../src/types/Constants.sol';
+import {EncodedModuleTypes} from '../utils/ModuleTypeLib.sol';
 
 contract EmittingHook is IModule {
   event PreCheckMsgData(bytes data);

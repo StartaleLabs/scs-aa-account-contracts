@@ -44,7 +44,7 @@ contract BaseAccount is IBaseAccount {
     assembly {
       if missingAccountFunds {
         // Ignore failure (it's EntryPoint's job to verify, not the account's).
-        pop(call(gas(), caller(), missingAccountFunds, codesize(), 0x00, codesize(), 0x00))
+        pop(call(gas(), caller(), missingAccountFunds, 0, 0, 0, 0))
       }
     }
   }
