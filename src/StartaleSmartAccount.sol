@@ -323,6 +323,7 @@ contract StartaleSmartAccount is
     _tryUninstallPreValidationHook(
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337), MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
     );
+    _tryUninstallFallbacks();
     _initSentinelLists();
   }
 

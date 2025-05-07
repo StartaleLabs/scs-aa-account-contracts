@@ -328,6 +328,27 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
+  // Review: if uninstalling selectors also need some data.
+  function _tryUninstallFallbacks() internal {
+    AccountStorage storage ds = _getAccountStorage();
+    uint256 len = ds.fallbackSelectors.length;
+
+    for (uint256 i = 0; i < len; i++) {
+      bytes4 selector = ds.fallbackSelectors[i];
+      FallbackHandler memory handler = ds.fallbacks[selector];
+
+      if (address(handler.handler) == address(0)) continue;
+
+      handler.handler.excessivelySafeCall(
+        gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, abi.encodePacked(selector))
+      );
+
+      ds.fallbacks[selector] = FallbackHandler(address(0), CallType.wrap(0x00));
+    }
+
+    delete ds.fallbackSelectors;
+  }
+
   /// @dev Sets the current hook in the storage to the specified address.
   /// @param hook The new hook address.
   function _setHook(address hook) internal virtual {
@@ -365,9 +386,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     // This check ensures that we do not overwrite an existing fallback handler, which could lead to unexpected behavior.
     require(!_isFallbackHandlerInstalled(selector), FallbackAlreadyInstalledForSelector(selector));
 
+    AccountStorage storage ds = _getAccountStorage();
+
     // Store the fallback handler and its call type in the account storage.
     // This maps the function selector to the specified fallback handler and call type.
-    _getAccountStorage().fallbacks[selector] = FallbackHandler(handler, calltype);
+    ds.fallbacks[selector] = FallbackHandler(handler, calltype);
+
+    // Add the selector to the maintained list of fallback selectors
+    ds.fallbackSelectors.push(selector);
 
     // Invoke the `onInstall` function of the fallback handler with the provided initialization data.
     // This step allows the fallback handler to perform any necessary setup or initialization.
@@ -378,7 +404,20 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   /// @param fallbackHandler The address of the fallback handler to uninstall.
   /// @param data The de-initialization data containing the selector.
   function _uninstallFallbackHandler(address fallbackHandler, bytes calldata data) internal virtual {
-    _getAccountStorage().fallbacks[bytes4(data[0:4])] = FallbackHandler(address(0), CallType.wrap(0x00));
+    AccountStorage storage ds = _getAccountStorage();
+    bytes4 selector = bytes4(data[0:4]);
+    ds.fallbacks[selector] = FallbackHandler(address(0), CallType.wrap(0x00));
+
+    // Remove selector from fallbackSelectors via swap-and-pop
+    uint256 len = ds.fallbackSelectors.length;
+    for (uint256 i = 0; i < len; i++) {
+      if (ds.fallbackSelectors[i] == selector) {
+        ds.fallbackSelectors[i] = ds.fallbackSelectors[len - 1];
+        ds.fallbackSelectors.pop();
+        break;
+      }
+    }
+
     fallbackHandler.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:]));
   }
 

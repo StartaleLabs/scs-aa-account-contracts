@@ -18,6 +18,8 @@ interface IAllStorage {
     SentinelListLib.SentinelList executors;
     ///< Mapping of selectors to their respective fallback handlers.
     mapping(bytes4 => FallbackHandler) fallbacks;
+    ///< List of fallback selectors, initialized upon contract deployment.
+    bytes4[] fallbackSelectors;
     ///< Current hook module associated with this account.
     IHook hook;
     ///< Mapping of hooks to requested timelocks.
