@@ -38,6 +38,8 @@ import {
 } from './types/Constants.sol';
 
 import {EmergencyUninstall} from './types/Structs.sol';
+
+import {_packValidationData} from '@account-abstraction/core/Helpers.sol';
 import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {SENTINEL, SentinelListLib, ZERO_ADDRESS} from 'sentinellist/SentinelList.sol';
 import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
@@ -113,7 +115,11 @@ contract StartaleSmartAccount is
     } else if (op.nonce.isModuleEnableMode()) {
       // if it is module enable mode, we need to enable the module first
       // and get the cleaned signature
-      userOp.signature = _enableMode(userOpHash, op.signature);
+      (bool enableModeSigValid, bytes calldata userOpSignature) = _enableMode(userOpHash, op.signature);
+      if (!enableModeSigValid) {
+        return _packValidationData(true, 0, 0);
+      }
+      userOp.signature = userOpSignature;
     }
     validator = _handleValidator(op.nonce.getValidator());
     (userOpHash, userOp.signature) = _withPreValidationHook(userOpHash, userOp, missingAccountFunds);

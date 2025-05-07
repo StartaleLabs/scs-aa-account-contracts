@@ -492,9 +492,7 @@ contract TestModuleManager_EnableMode is Test, TestModuleManagerBase {
     PackedUserOperation[] memory userOps = new PackedUserOperation[](1);
     userOps[0] = op;
 
-    bytes memory expectedRevertReason = abi.encodeWithSelector(
-      FailedOpWithRevert.selector, 0, 'AA23 reverted', abi.encodeWithSelector(EnableModeSigError.selector)
-    );
+    bytes memory expectedRevertReason = abi.encodeWithSelector(FailedOpWithRevert.selector, 0, 'AA23 reverted', 0x0);
 
     vm.expectRevert(expectedRevertReason);
     ENTRYPOINT.handleOps(userOps, payable(BOB.addr));
