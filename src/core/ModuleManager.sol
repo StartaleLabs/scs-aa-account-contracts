@@ -219,7 +219,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
       revert DefaultValidatorAlreadyInstalled();
     }
     _getAccountStorage().validators.push(validator);
-    IValidator(validator).onInstall(data);
+    if (data.length > 0) {
+      IValidator(validator).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls a validator module
@@ -266,7 +268,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   function _installExecutor(address executor, bytes calldata data) internal virtual withHook {
     if (!IExecutor(executor).isModuleType(MODULE_TYPE_EXECUTOR)) revert MismatchModuleTypeId();
     _getAccountStorage().executors.push(executor);
-    IExecutor(executor).onInstall(data);
+    if (data.length > 0) {
+      IExecutor(executor).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls an executor module by removing it from the executors list.
@@ -310,7 +314,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     address currentHook = _getHook();
     require(currentHook == address(0), HookAlreadyInstalled(currentHook));
     _setHook(hook);
-    IHook(hook).onInstall(data);
+    if (data.length > 0) {
+      IHook(hook).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls a hook module, ensuring the current hook matches the one intended for uninstallation.
@@ -477,7 +483,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
 
     // Invoke the `onInstall` function of the fallback handler with the provided initialization data.
     // This step allows the fallback handler to perform any necessary setup or initialization.
-    IFallback(handler).onInstall(initData);
+    if (initData.length > 0) {
+      IFallback(handler).onInstall(initData);
+    }
   }
 
   /// @dev Uninstalls a fallback handler for a given selector.
@@ -521,7 +529,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     address currentPreValidationHook = _getPreValidationHook(preValidationHookType);
     if (currentPreValidationHook != address(0)) revert PrevalidationHookAlreadyInstalled(currentPreValidationHook);
     _setPreValidationHook(preValidationHookType, preValidationHook);
-    IModule(preValidationHook).onInstall(data);
+    if (data.length > 0) {
+      IModule(preValidationHook).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls a pre-validation hook module
