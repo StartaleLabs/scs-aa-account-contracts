@@ -20,6 +20,8 @@ interface IAllStorage {
     mapping(bytes4 => FallbackHandler) fallbacks;
     ///< List of fallback selectors, initialized upon contract deployment.
     bytes4[] fallbackSelectors;
+    ///< ERC-165 interfaces installed on the account.
+    mapping(bytes4 => bool) supportedIfaces;
     ///< Current hook module associated with this account.
     IHook hook;
     ///< Mapping of hooks to requested timelocks.

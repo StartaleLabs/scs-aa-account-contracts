@@ -633,6 +633,30 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
+  /// @notice Installs an interface to the smart account.
+  /// @param interfaceId The id of the interface to install.
+  function _installInterface(bytes4 interfaceId) internal virtual {
+    AccountStorage storage ds = _getAccountStorage();
+    ds.supportedIfaces[interfaceId] = true;
+    emit InterfaceInstalled(interfaceId);
+  }
+
+  /// @notice Uninstalls an interface from the smart account.
+  /// @param interfaceId The id of the interface to uninstall.
+  function _uninstallInterface(bytes4 interfaceId) internal virtual {
+    AccountStorage storage ds = _getAccountStorage();
+    ds.supportedIfaces[interfaceId] = false;
+    emit InterfaceUninstalled(interfaceId);
+  }
+
+  /// @notice Installs multiple interfaces to the smart account.
+  /// @param interfaceIds The ids of the interfaces to install.
+  function _installInterfaces(bytes4[] calldata interfaceIds) internal virtual {
+    for (uint256 i = 0; i < interfaceIds.length; i++) {
+      _installInterface(interfaceIds[i]);
+    }
+  }
+
   /// @notice Checks if an emergency uninstall signature is valid.
   /// @param data The emergency uninstall data.
   /// @param signature The signature to validate.

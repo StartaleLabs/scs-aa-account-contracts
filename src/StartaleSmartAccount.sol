@@ -10,6 +10,9 @@ import {IValidator} from './interfaces/IERC7579Module.sol';
 import {IStartaleSmartAccount} from './interfaces/IStartaleSmartAccount.sol';
 import {ExecutionLib} from './lib/ExecutionLib.sol';
 import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
+import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
+import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
 import {Initializable} from './lib/Initializable.sol';
 import {
@@ -51,6 +54,7 @@ import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
 /// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ on which this implementation is highly based on.
 contract StartaleSmartAccount is
   IStartaleSmartAccount,
+  IERC165,
   BaseAccount,
   ExecutionHelper,
   ModuleManager,
@@ -192,6 +196,28 @@ contract StartaleSmartAccount is
   ) external payable onlyEntryPointOrSelf {
     _installModule(moduleTypeId, module, initData);
     emit ModuleInstalled(moduleTypeId, module);
+  }
+
+  /// @notice Installs an interface to the smart account.
+  /// @param interfaceId The id of the interface to install.
+  /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
+  function installInterface(bytes4 interfaceId) external payable onlyEntryPointOrSelf {
+    _installInterface(interfaceId);
+    emit InterfaceInstalled(interfaceId);
+  }
+
+  /// @notice Installs multiple interfaces to the smart account.
+  /// @param interfaceIds The ids of the interfaces to install.
+  /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
+  function installInterfaces(bytes4[] calldata interfaceIds) external payable onlyEntryPointOrSelf {
+    _installInterfaces(interfaceIds);
+  }
+
+  /// @notice Uninstalls an interface from the smart account.
+  /// @param interfaceId The id of the interface to uninstall.
+  /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
+  function uninstallInterface(bytes4 interfaceId) external payable onlyEntryPointOrSelf {
+    _uninstallInterface(interfaceId);
   }
 
   /// @notice Uninstalls a module from the smart account.
@@ -385,6 +411,17 @@ contract StartaleSmartAccount is
     // Return true if both the call type and execution type are supported.
     return (callType == CALLTYPE_SINGLE || callType == CALLTYPE_BATCH || callType == CALLTYPE_DELEGATECALL)
       && (execType == EXECTYPE_DEFAULT || execType == EXECTYPE_TRY);
+  }
+
+  function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
+    AccountStorage storage ds = _getAccountStorage();
+    if (
+      interfaceId == type(IERC721Receiver).interfaceId || interfaceId == type(IERC1155Receiver).interfaceId
+        || interfaceId == type(IERC165).interfaceId
+    ) {
+      return true;
+    }
+    return ds.supportedIfaces[interfaceId];
   }
 
   /// @notice Determines whether a module is installed on the smart account.
