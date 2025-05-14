@@ -331,7 +331,7 @@ contract StartaleSmartAccount is
     }
   }
 
-  /// @dev Uninstalls all validators, executors, hooks, and pre-validation hooks.
+  /// @dev Uninstalls all validators, executors, hooks, fallbacks, and pre-validation hooks.
   /// @notice It is worth noting that, onRedelegation() does not obligate the account to completely wipe out it’s storage.
   /// @notice It is an optional action for the account where it could uninitialize the storage variables as much as it can to provide clean storage for new wallet.
   function _onRedelegation() internal override {
