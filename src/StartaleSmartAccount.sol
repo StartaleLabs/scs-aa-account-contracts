@@ -2,21 +2,14 @@
 pragma solidity ^0.8.29;
 
 import {BaseAccount} from './core/BaseAccount.sol';
-
 import {ERC7779Adapter} from './core/ERC7779Adapter.sol';
 import {ExecutionHelper} from './core/ExecutionHelper.sol';
 import {ModuleManager} from './core/ModuleManager.sol';
-
 import {IERC7579Account} from './interfaces/IERC7579Account.sol';
 import {IValidator} from './interfaces/IERC7579Module.sol';
 import {IStartaleSmartAccount} from './interfaces/IStartaleSmartAccount.sol';
 import {IAccountConfig} from './interfaces/core/IAccountConfig.sol';
 import {ExecutionLib} from './lib/ExecutionLib.sol';
-import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
-import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
-import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
-import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
 import {Initializable} from './lib/Initializable.sol';
 import {
@@ -31,6 +24,7 @@ import {
   ModeLib
 } from './lib/ModeLib.sol';
 import {NonceLib} from './lib/NonceLib.sol';
+import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
 import {
   MODULE_TYPE_EXECUTOR,
   MODULE_TYPE_FALLBACK,
@@ -43,11 +37,13 @@ import {
   VALIDATION_FAILED,
   VALIDATION_SUCCESS
 } from './types/Constants.sol';
-
 import {EmergencyUninstall} from './types/Structs.sol';
-
 import {_packValidationData} from '@account-abstraction/core/Helpers.sol';
 import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
+import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
+import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
+import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {SENTINEL, SentinelListLib, ZERO_ADDRESS} from 'sentinellist/SentinelList.sol';
 import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
 
@@ -338,11 +334,10 @@ contract StartaleSmartAccount is
   /// @dev Uninstalls all validators, executors, hooks, and pre-validation hooks.
   /// @notice It is worth noting that, onRedelegation() does not obligate the account to completely wipe out it’s storage.
   /// @notice It is an optional action for the account where it could uninitialize the storage variables as much as it can to provide clean storage for new wallet.
-  /// Review: _onRedelegation. If ERC authors agrees with the change then we could have bytes calldata context as param.
   function _onRedelegation() internal override {
-    _tryUninstallValidators();
-    _tryUninstallExecutors();
-    _tryUninstallHook(_getHook());
+    _uninstallAllValidators();
+    _uninstallAllExecutors();
+    _uninstallHook(_getHook());
     _tryUninstallPreValidationHook(
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271), MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
     );

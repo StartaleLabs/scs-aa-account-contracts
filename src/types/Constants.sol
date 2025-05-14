@@ -13,11 +13,6 @@ uint256 constant VALIDATION_SUCCESS = 0;
 // Value indicating failed validation
 uint256 constant VALIDATION_FAILED = 1;
 
-// Review: Alternate naming
-// Todo: Maybe arrange constants in category of their context
-// uint256 constant SIG_VALIDATION_FAILED_UINT = 1;
-// uint256 constant SIG_VALIDATION_SUCCESS_UINT = 0;
-
 // Module type identifier for Multitype install
 uint256 constant MODULE_TYPE_MULTI = 0;
 

@@ -139,7 +139,6 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    * @param _newOwner The address of the new owner
    */
   function transferOwnership(address _newOwner) external {
-    // Review: other checks on newOwner address
     if (_newOwner == address(0)) {
       revert OwnerCannotBeZeroAddress();
     }

@@ -47,7 +47,6 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
   }
 
   /// @notice Tests delegate call execution via MockExecutor
-  // Review
   function test_ExecuteDelegateCallFromExecutor_Success() public {
     (bool res,) = payable(address(BOB_ACCOUNT)).call{value: 2 ether}(''); // Fund BOB_ACCOUNT
     assertEq(res, true, 'Funding BOB_ACCOUNT should succeed');

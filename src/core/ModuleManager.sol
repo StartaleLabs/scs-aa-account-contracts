@@ -245,20 +245,10 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
-  /// Review: _tryUninstallValidators Might as well not call onUninstall() at all
-  /// Review: separate internal method can be added that accepts an array of data.
   /// @dev Uninstalls all validators from the smart account.
   /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
-  function _tryUninstallValidators() internal {
+  function _uninstallAllValidators() internal {
     SentinelListLib.SentinelList storage $valdiators = _getAccountStorage().validators;
-    address validator = $valdiators.getNext(SENTINEL);
-    while (validator != SENTINEL) {
-      try IValidator(validator).onUninstall('') {}
-      catch {
-        emit ValidatorUninstallFailed(validator, '');
-      }
-      validator = $valdiators.getNext(validator);
-    }
     $valdiators.popAll();
   }
 
@@ -289,20 +279,10 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
-  /// Review: _tryUninstallExecutors Might as well not call onUninstall() at all
-  /// Review: separate internal method can be added that accepts an array of data.
   /// @dev Uninstalls all executors from the smart account.
   /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
-  function _tryUninstallExecutors() internal {
+  function _uninstallAllExecutors() internal {
     SentinelListLib.SentinelList storage $executors = _getAccountStorage().executors;
-    address executor = $executors.getNext(SENTINEL);
-    while (executor != SENTINEL) {
-      try IExecutor(executor).onUninstall('') {}
-      catch {
-        emit ExecutorUninstallFailed(executor, '');
-      }
-      executor = $executors.getNext(executor);
-    }
     $executors.popAll();
   }
 
@@ -337,20 +317,14 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
-  /// Review: _tryUninstallHook
   /// @dev Uninstalls a hook module.
   /// @param hook The address of the hook to be uninstalled.
-  function _tryUninstallHook(address hook) internal virtual {
+  function _uninstallHook(address hook) internal virtual {
     if (hook != address(0)) {
-      try IHook(hook).onUninstall('') {}
-      catch {
-        emit HookUninstallFailed(hook, '');
-      }
       _setHook(address(0));
     }
   }
 
-  // Review: if uninstalling selectors also need some data.
   function _tryUninstallFallbacks() internal {
     AccountStorage storage ds = _getAccountStorage();
     uint256 len = ds.fallbackSelectors.length;
@@ -556,14 +530,13 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     uint256 hookType,
     bytes calldata data
   ) internal virtual {
-    // Review
-    // Check if the hook is installed according to supplied type
-    // Check if the hook is one of the allowed types
-    // IModule(preValidationHook).onUninstall(data);
     _setPreValidationHook(hookType, address(0));
+    try IModule(preValidationHook).onUninstall(data) {}
+    catch {
+      emit PreValidationHookUninstallFailed(preValidationHook, data);
+    }
   }
 
-  // Review: _tryUninstallPreValidationHook
   function _tryUninstallPreValidationHook(address hook, uint256 hookType) internal virtual {
     if (hook == address(0)) return;
     if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
