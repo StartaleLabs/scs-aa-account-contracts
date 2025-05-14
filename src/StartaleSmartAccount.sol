@@ -10,7 +10,6 @@ import {IValidator} from './interfaces/IERC7579Module.sol';
 import {IStartaleSmartAccount} from './interfaces/IStartaleSmartAccount.sol';
 import {IAccountConfig} from './interfaces/core/IAccountConfig.sol';
 import {ExecutionLib} from './lib/ExecutionLib.sol';
-
 import {Initializable} from './lib/Initializable.sol';
 import {
   CALLTYPE_BATCH,
@@ -38,7 +37,6 @@ import {
   VALIDATION_SUCCESS
 } from './types/Constants.sol';
 import {EmergencyUninstall} from './types/Structs.sol';
-import {_packValidationData} from '@account-abstraction/core/Helpers.sol';
 import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
 import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
 import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
@@ -114,11 +112,7 @@ contract StartaleSmartAccount is
     if (op.nonce.isModuleEnableMode()) {
       // if it is module enable mode, we need to enable the module first
       // and get the cleaned signature
-      (bool enableModeSigValid, bytes calldata userOpSignature) = _enableMode(userOpHash, op.signature);
-      if (!enableModeSigValid) {
-        return _packValidationData(true, 0, 0);
-      }
-      userOp.signature = userOpSignature;
+      userOp.signature = _enableMode(userOpHash, op.signature);
     }
     validator = _handleValidator(op.nonce.getValidator());
     (userOpHash, userOp.signature) = _withPreValidationHook(userOpHash, userOp, missingAccountFunds);

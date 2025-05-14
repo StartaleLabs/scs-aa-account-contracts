@@ -141,12 +141,8 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
 
   /// @dev Implements Module Enable Mode flow.
   /// @param packedData Data source to parse data required to perform Module Enable mode from.
-  /// @return enableModeSigValid true if the enable mode signature is valid, false otherwise
   /// @return userOpSignature the clean signature which can be further used for userOp validation
-  function _enableMode(
-    bytes32 userOpHash,
-    bytes calldata packedData
-  ) internal returns (bool enableModeSigValid, bytes calldata userOpSignature) {
+  function _enableMode(bytes32 userOpHash, bytes calldata packedData) internal returns (bytes calldata userOpSignature) {
     address module;
     uint256 moduleType;
     bytes calldata moduleInitData;
@@ -165,11 +161,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
         validator: enableModeSigValidator
       })
     ) {
-      // Review
-      return (false, userOpSignature);
+      revert EnableModeSigError();
     }
     this.installModule{value: msg.value}(moduleType, module, moduleInitData);
-    return (true, userOpSignature);
   }
 
   /// @notice Installs a new module to the smart account.
@@ -742,7 +736,11 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     // Even if the validator doesn't support 7739 under the hood, it is still secure,
     // as eip712digest is already built based on 712Domain of this Smart Account
     // This interface should always be exposed by validators as per ERC-7579
-    return IValidator(validator).isValidSignatureWithSender(address(this), eip712Digest, sig) == ERC1271_MAGICVALUE;
+    try IValidator(validator).isValidSignatureWithSender(address(this), eip712Digest, sig) returns (bytes4 res) {
+      return res == ERC1271_MAGICVALUE;
+    } catch {
+      return false;
+    }
   }
 
   /// @notice Builds the enable mode data hash as per eip712
