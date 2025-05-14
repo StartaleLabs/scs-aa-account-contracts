@@ -6,10 +6,14 @@ import {BaseAccount} from './core/BaseAccount.sol';
 import {ERC7779Adapter} from './core/ERC7779Adapter.sol';
 import {ExecutionHelper} from './core/ExecutionHelper.sol';
 import {ModuleManager} from './core/ModuleManager.sol';
+
+import {IERC7579Account} from './interfaces/IERC7579Account.sol';
 import {IValidator} from './interfaces/IERC7579Module.sol';
 import {IStartaleSmartAccount} from './interfaces/IStartaleSmartAccount.sol';
+import {IAccountConfig} from './interfaces/core/IAccountConfig.sol';
 import {ExecutionLib} from './lib/ExecutionLib.sol';
 import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
+import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
 import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
@@ -203,7 +207,6 @@ contract StartaleSmartAccount is
   /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
   function installInterface(bytes4 interfaceId) external payable onlyEntryPointOrSelf {
     _installInterface(interfaceId);
-    emit InterfaceInstalled(interfaceId);
   }
 
   /// @notice Installs multiple interfaces to the smart account.
@@ -347,7 +350,7 @@ contract StartaleSmartAccount is
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337), MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
     );
     _tryUninstallFallbacks();
-    // Review: If we maintain banned selectors then clear them as well.
+    _uninstallAllInterfaces();
     _initSentinelLists();
   }
 
@@ -417,7 +420,9 @@ contract StartaleSmartAccount is
     AccountStorage storage ds = _getAccountStorage();
     if (
       interfaceId == type(IERC721Receiver).interfaceId || interfaceId == type(IERC1155Receiver).interfaceId
-        || interfaceId == type(IERC165).interfaceId
+        || interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC1271).interfaceId
+        || interfaceId == type(IStartaleSmartAccount).interfaceId || interfaceId == type(IERC7579Account).interfaceId
+        || interfaceId == type(IAccountConfig).interfaceId
     ) {
       return true;
     }

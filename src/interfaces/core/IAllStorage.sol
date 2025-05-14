@@ -22,6 +22,8 @@ interface IAllStorage {
     bytes4[] fallbackSelectors;
     ///< ERC-165 interfaces installed on the account.
     mapping(bytes4 => bool) supportedIfaces;
+    ///< List of installed interfaces, initialized upon contract deployment.
+    bytes4[] installedIfaces;
     ///< Current hook module associated with this account.
     IHook hook;
     ///< Mapping of hooks to requested timelocks.

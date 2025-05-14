@@ -3,6 +3,7 @@ pragma solidity ^0.8.29;
 
 import {IModuleManager} from '../../../../../src/interfaces/core/IModuleManager.sol';
 
+import {StartaleSmartAccount} from '../../../../../src/StartaleSmartAccount.sol';
 import {Counter} from '../../../mocks/Counter.sol';
 import {MockHandler} from '../../../mocks/MockHandler.sol';
 import '../../../mocks/MockNFT.sol';
@@ -368,6 +369,22 @@ contract TestModuleManager_FallbackHandler is TestModuleManagerBase {
     assertEq(chainId, block.chainid);
     assertEq(sender, expectedSender);
     assertEq(keccak256(resultData), keccak256(expectedData));
+
+    //Verify interface is not installed
+    assertEq(BOB_ACCOUNT.supportsInterface(type(IHandler).interfaceId), false);
+
+    // Also register the interface. This could be done as a batch when installing the fallback handler.
+    bytes memory callDataToInstallInterface =
+      abi.encodeWithSelector(StartaleSmartAccount.installInterface.selector, type(IHandler).interfaceId);
+    Execution[] memory executionToInstallInterface = new Execution[](1);
+    executionToInstallInterface[0] = Execution(address(BOB_ACCOUNT), 0, callDataToInstallInterface);
+    PackedUserOperation[] memory userOpsToInstallInterface = buildPackedUserOperation(
+      BOB, BOB_ACCOUNT, EXECTYPE_DEFAULT, executionToInstallInterface, address(VALIDATOR_MODULE), 0
+    );
+    ENTRYPOINT.handleOps(userOpsToInstallInterface, payable(address(BOB.addr)));
+
+    // Verify the interface was installed
+    assertEq(BOB_ACCOUNT.supportsInterface(type(IHandler).interfaceId), true);
   }
 
   function test_ReturnBytes_and_Hook_fallback() public {

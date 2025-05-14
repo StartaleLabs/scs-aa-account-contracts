@@ -376,6 +376,19 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     delete ds.fallbackSelectors;
   }
 
+  /// @dev Uninstalls all interfaces from the smart account.
+  /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
+  /// @notice clears all the storage variables related to interfaces.
+  function _uninstallAllInterfaces() internal {
+    AccountStorage storage ds = _getAccountStorage();
+    uint256 len = ds.installedIfaces.length;
+    for (uint256 i = 0; i < len; i++) {
+      bytes4 interfaceId = ds.installedIfaces[i];
+      _uninstallInterface(interfaceId);
+    }
+    delete ds.installedIfaces;
+  }
+
   /// @dev Sets the current hook in the storage to the specified address.
   /// @param hook The new hook address.
   function _setHook(address hook) internal virtual {
@@ -638,6 +651,7 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   function _installInterface(bytes4 interfaceId) internal virtual {
     AccountStorage storage ds = _getAccountStorage();
     ds.supportedIfaces[interfaceId] = true;
+    ds.installedIfaces.push(interfaceId);
     emit InterfaceInstalled(interfaceId);
   }
 
@@ -646,6 +660,15 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   function _uninstallInterface(bytes4 interfaceId) internal virtual {
     AccountStorage storage ds = _getAccountStorage();
     ds.supportedIfaces[interfaceId] = false;
+    // Remove interfaceId from installedIfaces via swap-and-pop
+    uint256 len = ds.installedIfaces.length;
+    for (uint256 i = 0; i < len; i++) {
+      if (ds.installedIfaces[i] == interfaceId) {
+        ds.installedIfaces[i] = ds.installedIfaces[len - 1];
+        ds.installedIfaces.pop();
+        break;
+      }
+    }
     emit InterfaceUninstalled(interfaceId);
   }
 
