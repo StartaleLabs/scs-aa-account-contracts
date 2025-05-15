@@ -119,7 +119,7 @@ contract StartaleSmartAccount is
     validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
   }
 
-  /// @notice Executes transactions in single or batch modes as specified by the execution mode.
+  /// @notice Executes transactions in single or batch modes as specified g by the execution mode.
   /// @param mode The execution mode detailing how transactions should be handled (single, batch, default, try/catch).
   /// @param executionCalldata The encoded transaction data to execute.
   /// @dev This function handles transaction execution flexibility and is protected by the `onlyEntryPoint` modifier.
@@ -332,13 +332,13 @@ contract StartaleSmartAccount is
     _uninstallAllValidators();
     _uninstallAllExecutors();
     _uninstallHook(_getHook());
-    _tryUninstallPreValidationHook(
+    _uninstallPreValidationHook(
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271), MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
     );
-    _tryUninstallPreValidationHook(
+    _uninstallPreValidationHook(
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337), MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
     );
-    _tryUninstallFallbacks();
+    _uninstallAllFallbacks();
     _uninstallAllInterfaces();
     _initSentinelLists();
   }

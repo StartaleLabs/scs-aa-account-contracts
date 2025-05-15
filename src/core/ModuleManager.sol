@@ -319,25 +319,12 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
-  function _tryUninstallFallbacks() internal {
+  function _uninstallAllFallbacks() internal {
     AccountStorage storage ds = _getAccountStorage();
     uint256 len = ds.fallbackSelectors.length;
 
     for (uint256 i = 0; i < len; i++) {
       bytes4 selector = ds.fallbackSelectors[i];
-      FallbackHandler memory handler = ds.fallbacks[selector];
-
-      if (address(handler.handler) == address(0)) continue;
-
-      (bool success, bytes memory returnData) = handler.handler.excessivelySafeCall(
-        gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, abi.encodePacked(selector))
-      );
-      if (!success) {
-        emit ExternalCallFailed(
-          handler.handler, abi.encodeWithSelector(IModule.onUninstall.selector, abi.encodePacked(selector)), returnData
-        );
-      }
-
       ds.fallbacks[selector] = FallbackHandler(address(0), CallType.wrap(0x00));
     }
 
@@ -531,20 +518,12 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
     }
   }
 
-  function _tryUninstallPreValidationHook(address hook, uint256 hookType) internal virtual {
+  function _uninstallPreValidationHook(address hook, uint256 hookType) internal virtual {
     if (hook == address(0)) return;
     if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
-      try _getAccountStorage().preValidationHookERC1271.onUninstall('') {}
-      catch {
-        emit PreValidationHookUninstallFailed(hook, '');
-      }
       _setPreValidationHook(hookType, address(0));
       emit ModuleUninstalled(hookType, hook);
     } else if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
-      try _getAccountStorage().preValidationHookERC4337.onUninstall('') {}
-      catch {
-        emit PreValidationHookUninstallFailed(hook, '');
-      }
       _setPreValidationHook(hookType, address(0));
       emit ModuleUninstalled(hookType, hook);
     } else {
