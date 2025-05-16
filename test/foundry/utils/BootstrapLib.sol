@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
-import {BootstrapConfig, BootstrapPreValidationHookConfig} from '../utils/Bootstrap.sol';
+import {BootstrapConfig, BootstrapPreValidationHookConfig} from '../../../src/utils/Bootstrap.sol';
 
 /// @title Bootstrap Configuration Library
 /// @notice Provides utility functions to create and manage BootstrapConfig structures.

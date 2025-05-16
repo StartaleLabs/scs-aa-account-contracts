@@ -47,7 +47,6 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
   }
 
   /// @notice Tests delegate call execution via MockExecutor
-  // Review
   function test_ExecuteDelegateCallFromExecutor_Success() public {
     (bool res,) = payable(address(BOB_ACCOUNT)).call{value: 2 ether}(''); // Fund BOB_ACCOUNT
     assertEq(res, true, 'Funding BOB_ACCOUNT should succeed');
@@ -365,7 +364,9 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
 
     // Expect the TryExecuteUnsuccessful event to be emitted
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
 
     // Execute batch operation via MockExecutor
     mockExecutor.tryExecuteBatchViaAccount(BOB_ACCOUNT, executions);
@@ -386,7 +387,9 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
 
     // Expect the TryExecuteUnsuccessful event to be emitted
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
 
     // Prank and execute batch operation via BOB_ACCOUNT
     prank(address(mockExecutor));
@@ -409,9 +412,13 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
 
     // Expect the TryExecuteUnsuccessful event to be emitted for each failure
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[0].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[0].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), executions[1].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
 
     // Execute batch operation via MockExecutor
     mockExecutor.tryExecuteBatchViaAccount(BOB_ACCOUNT, executions);
@@ -431,7 +438,7 @@ contract TestExecution_ExecuteFromExecutor is TestExecutionBase {
 
     // Expect the TryExecuteUnsuccessful event to be emitted
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(executions[0].callData, '');
+    emit TryExecuteUnsuccessful(address(counter), executions[0].callData, '');
 
     // Execute batch operation via MockExecutor
     mockExecutor.tryExecuteBatchViaAccount(BOB_ACCOUNT, executions);

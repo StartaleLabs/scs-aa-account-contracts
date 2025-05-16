@@ -6,8 +6,9 @@ import {
   IPreValidationHookERC4337,
   PackedUserOperation
 } from '../../../src/interfaces/IERC7579Module.sol';
-import {EncodedModuleTypes} from '../../../src/lib/ModuleTypeLib.sol';
+
 import '../../../src/types/Constants.sol';
+import {EncodedModuleTypes} from '../utils/ModuleTypeLib.sol';
 
 contract MockPreValidationHook is IPreValidationHookERC1271, IPreValidationHookERC4337 {
   event PreCheckCalled();

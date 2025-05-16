@@ -10,7 +10,7 @@ import {
   IPreValidationHookERC4337,
   IValidator
 } from '../interfaces/IERC7579Module.sol';
-import {IModuleManagerEventsAndErrors} from '../interfaces/core/IModuleManagerEventsAndErrors.sol';
+import {IModuleManager} from '../interfaces/core/IModuleManager.sol';
 import {DataParserLib} from '../lib/DataParserLib.sol';
 import {ExecutionLib} from '../lib/ExecutionLib.sol';
 import {CALLTYPE_SINGLE, CALLTYPE_STATIC, CallType} from '../lib/ModeLib.sol';
@@ -41,7 +41,7 @@ import {EIP712} from 'solady/utils/EIP712.sol';
 /// @dev Implements SentinelList for managing modules via a linked list structure, adhering to ERC-7579.
 /// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ and ERC7579 reference implementation on which this implementation is highly based on.
 /// Special thanks to the Solady team for foundational contributions: https://github.com/Vectorized/solady
-abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndErrors {
+abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   using SentinelListLib for SentinelListLib.SentinelList;
   using DataParserLib for bytes;
   using ExecutionLib for address;
@@ -163,7 +163,7 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     ) {
       revert EnableModeSigError();
     }
-    _installModule(moduleType, module, moduleInitData);
+    this.installModule{value: msg.value}(moduleType, module, moduleInitData);
   }
 
   /// @notice Installs a new module to the smart account.
@@ -213,7 +213,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
       revert DefaultValidatorAlreadyInstalled();
     }
     _getAccountStorage().validators.push(validator);
-    IValidator(validator).onInstall(data);
+    if (data.length > 0) {
+      IValidator(validator).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls a validator module
@@ -227,24 +229,20 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     // Perform the removal first
     validators.pop(prev, validator);
 
-    validator.excessivelySafeCall(
+    (bool success, bytes memory returnData) = validator.excessivelySafeCall(
       gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData)
     );
+    if (!success) {
+      emit ExternalCallFailed(
+        validator, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData), returnData
+      );
+    }
   }
 
-  /// Review: _tryUninstallValidators
   /// @dev Uninstalls all validators from the smart account.
   /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
-  function _tryUninstallValidators() internal {
+  function _uninstallAllValidators() internal {
     SentinelListLib.SentinelList storage $valdiators = _getAccountStorage().validators;
-    address validator = $valdiators.getNext(SENTINEL);
-    while (validator != SENTINEL) {
-      try IValidator(validator).onUninstall('') {}
-      catch {
-        emit ValidatorUninstallFailed(validator, '');
-      }
-      validator = $valdiators.getNext(validator);
-    }
     $valdiators.popAll();
   }
 
@@ -254,7 +252,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
   function _installExecutor(address executor, bytes calldata data) internal virtual withHook {
     if (!IExecutor(executor).isModuleType(MODULE_TYPE_EXECUTOR)) revert MismatchModuleTypeId();
     _getAccountStorage().executors.push(executor);
-    IExecutor(executor).onInstall(data);
+    if (data.length > 0) {
+      IExecutor(executor).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls an executor module by removing it from the executors list.
@@ -263,24 +263,20 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
   function _uninstallExecutor(address executor, bytes calldata data) internal virtual {
     (address prev, bytes memory disableModuleData) = abi.decode(data, (address, bytes));
     _getAccountStorage().executors.pop(prev, executor);
-    executor.excessivelySafeCall(
+    (bool success, bytes memory returnData) = executor.excessivelySafeCall(
       gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData)
     );
+    if (!success) {
+      emit ExternalCallFailed(
+        executor, abi.encodeWithSelector(IModule.onUninstall.selector, disableModuleData), returnData
+      );
+    }
   }
 
-  /// Review: _tryUninstallExecutors
   /// @dev Uninstalls all executors from the smart account.
   /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
-  function _tryUninstallExecutors() internal {
+  function _uninstallAllExecutors() internal {
     SentinelListLib.SentinelList storage $executors = _getAccountStorage().executors;
-    address executor = $executors.getNext(SENTINEL);
-    while (executor != SENTINEL) {
-      try IExecutor(executor).onUninstall('') {}
-      catch {
-        emit ExecutorUninstallFailed(executor, '');
-      }
-      executor = $executors.getNext(executor);
-    }
     $executors.popAll();
   }
 
@@ -292,7 +288,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     address currentHook = _getHook();
     require(currentHook == address(0), HookAlreadyInstalled(currentHook));
     _setHook(hook);
-    IHook(hook).onInstall(data);
+    if (data.length > 0) {
+      IHook(hook).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls a hook module, ensuring the current hook matches the one intended for uninstallation.
@@ -306,20 +304,44 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     {
       _uninstallPreValidationHook(hook, hookType, data);
     }
-    hook.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data));
+    (bool success, bytes memory returnData) =
+      hook.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data));
+    if (!success) {
+      emit ExternalCallFailed(hook, abi.encodeWithSelector(IModule.onUninstall.selector, data), returnData);
+    }
   }
 
-  /// Review: _tryUninstallHook
   /// @dev Uninstalls a hook module.
   /// @param hook The address of the hook to be uninstalled.
-  function _tryUninstallHook(address hook) internal virtual {
+  function _uninstallHook(address hook) internal virtual {
     if (hook != address(0)) {
-      try IHook(hook).onUninstall('') {}
-      catch {
-        emit HookUninstallFailed(hook, '');
-      }
       _setHook(address(0));
     }
+  }
+
+  function _uninstallAllFallbacks() internal {
+    AccountStorage storage ds = _getAccountStorage();
+    uint256 len = ds.fallbackSelectors.length;
+
+    for (uint256 i = 0; i < len; i++) {
+      bytes4 selector = ds.fallbackSelectors[i];
+      ds.fallbacks[selector] = FallbackHandler(address(0), CallType.wrap(0x00));
+    }
+
+    delete ds.fallbackSelectors;
+  }
+
+  /// @dev Uninstalls all interfaces from the smart account.
+  /// @dev This function is called in the _onRedelegation function in StartaleSmartAccount.sol
+  /// @notice clears all the storage variables related to interfaces.
+  function _uninstallAllInterfaces() internal {
+    AccountStorage storage ds = _getAccountStorage();
+    uint256 len = ds.installedIfaces.length;
+    for (uint256 i = 0; i < len; i++) {
+      bytes4 interfaceId = ds.installedIfaces[i];
+      _uninstallInterface(interfaceId);
+    }
+    delete ds.installedIfaces;
   }
 
   /// @dev Sets the current hook in the storage to the specified address.
@@ -344,14 +366,73 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     // Extract the initialization data from the provided parameters.
     bytes memory initData = params[5:];
 
-    // Revert if the selector is either `onInstall(bytes)` (0x6d61fe70) or `onUninstall(bytes)` (0x8a91b0e3) or explicit bytes(0).
+    // Revert if the selector is one of the banned selectors
+    // `onInstall(bytes)` (0x6d61fe70) or `onUninstall(bytes)` (0x8a91b0e3) or explicit bytes(0).
+    // Major selectors from ERC-7579, ERC-721, ERC-1155, ERC-1271 and ERC-4337
+    // Majority of startale account native selectors
     // These selectors are explicitly forbidden to prevent security vulnerabilities.
+
     // Allowing these selectors would enable unauthorized users to uninstall and reinstall critical modules.
     // If a validator module is uninstalled and reinstalled without proper authorization, it can compromise
     // the account's security and integrity. By restricting these selectors, we ensure that the fallback handler
     // cannot be manipulated to disrupt the expected behavior and security of the account.
+
+    // List of selectors
+
+    // IERC7579Module
+    // bytes4(0x6d61fe70) - onInstall(bytes)
+    // bytes4(0x8a91b0e3) - onUninstall(bytes)
+    // bytes4(0xecd05961) - isModuleType(uint256)
+    // bytes4(0xd60b347f) - isInitialized()
+    // bytes4(0x7a0468b7) - preValidationHookERC1271()
+    // bytes4(0xe24f8f93) - preValidationHookERC4337()
+    // bytes4(0x97003203) - validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
+    // bytes4(0xf551e2ee) - isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata data)
+
+    // IHook
+    // bytes4(0xd68f6025) - preCheck()
+    // bytes4(0x173bf7da) - postCheck()
+
+    // IValidator
+    // bytes4(0x97003203) - validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
+    // bytes4(0xf551e2ee) - isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata data)
+
+    // bytes4(0) - empty bytes
+
+    // ERC-4337
+    // bytes4(0xee219423) - simulateValidation(PackedUserOperation calldata userOp, bytes32 userOpHash)
+    // bytes4(0x570e1a36) - createSender(address)
+    // bytes4(0x19822f7c) - validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    // bytes4(0x52b7512c) - validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
+    // bytes4(0xb760faf9) - depositTo(address to, uint256 amount)
+    // bytes4(0x8dd7712f) - executeUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash)
+
+    // Startale IERC7579Account
+    // bytes4(0x1626ba7e) - isValidSignature(bytes32 hash, bytes calldata signature)
+    // bytes4(0x4b6a1419) - initializeAccount(bytes calldata initData)
+    // bytes4(0xf2dc691d) - supportsModule(uint256 moduleTypeId)
+    // bytes4(0xd03c7914) - supportsExecutionMode(ExecutionMode mode)
+    // bytes4(0x9cfd7cff) - accountId()
+    // bytes4(0xe9ae5c53) - execute(ExecutionMode mode, bytes calldata executionCalldata)
+    // bytes4(0xd691c964) - executeFromExecutor(ExecutionMode mode, bytes calldata executionCalldata)
+    // bytes4(0x9517e29f) - installModule(uint256 moduleTypeId, address module, bytes calldata initData)
+    // bytes4(0xa71763a8) - uninstallModule(uint256 moduleTypeId, address module, bytes calldata deInitData)
+    // bytes4(0x112d3a7d) - isModuleInstalled(uint256 moduleTypeId, address module, bytes calldata additionalContext)
+
     require(
-      !(selector == bytes4(0x6d61fe70) || selector == bytes4(0x8a91b0e3) || selector == bytes4(0)),
+      // BAN ALL ABOVE SELECTORS
+      !(
+        selector == bytes4(0x6d61fe70) || selector == bytes4(0x8a91b0e3) || selector == bytes4(0xecd05961)
+          || selector == bytes4(0xd60b347f) || selector == bytes4(0x7a0468b7) || selector == bytes4(0xe24f8f93)
+          || selector == bytes4(0x97003203) || selector == bytes4(0xf551e2ee) || selector == bytes4(0xd68f6025)
+          || selector == bytes4(0x173bf7da) || selector == bytes4(0x97003203) || selector == bytes4(0xf551e2ee)
+          || selector == bytes4(0xee219423) || selector == bytes4(0x570e1a36) || selector == bytes4(0x19822f7c)
+          || selector == bytes4(0x52b7512c) || selector == bytes4(0xb760faf9) || selector == bytes4(0x8dd7712f)
+          || selector == bytes4(0x1626ba7e) || selector == bytes4(0x4b6a1419) || selector == bytes4(0xf2dc691d)
+          || selector == bytes4(0xd03c7914) || selector == bytes4(0x9cfd7cff) || selector == bytes4(0xe9ae5c53)
+          || selector == bytes4(0xd691c964) || selector == bytes4(0x9517e29f) || selector == bytes4(0xa71763a8)
+          || selector == bytes4(0x112d3a7d)
+      ),
       FallbackSelectorForbidden()
     );
 
@@ -359,21 +440,48 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     // This check ensures that we do not overwrite an existing fallback handler, which could lead to unexpected behavior.
     require(!_isFallbackHandlerInstalled(selector), FallbackAlreadyInstalledForSelector(selector));
 
+    AccountStorage storage ds = _getAccountStorage();
+
     // Store the fallback handler and its call type in the account storage.
     // This maps the function selector to the specified fallback handler and call type.
-    _getAccountStorage().fallbacks[selector] = FallbackHandler(handler, calltype);
+    ds.fallbacks[selector] = FallbackHandler(handler, calltype);
+
+    // Add the selector to the maintained list of fallback selectors
+    ds.fallbackSelectors.push(selector);
 
     // Invoke the `onInstall` function of the fallback handler with the provided initialization data.
     // This step allows the fallback handler to perform any necessary setup or initialization.
-    IFallback(handler).onInstall(initData);
+    if (initData.length > 0) {
+      IFallback(handler).onInstall(initData);
+    }
   }
 
   /// @dev Uninstalls a fallback handler for a given selector.
   /// @param fallbackHandler The address of the fallback handler to uninstall.
   /// @param data The de-initialization data containing the selector.
   function _uninstallFallbackHandler(address fallbackHandler, bytes calldata data) internal virtual {
-    _getAccountStorage().fallbacks[bytes4(data[0:4])] = FallbackHandler(address(0), CallType.wrap(0x00));
-    fallbackHandler.excessivelySafeCall(gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:]));
+    AccountStorage storage ds = _getAccountStorage();
+    bytes4 selector = bytes4(data[0:4]);
+    ds.fallbacks[selector] = FallbackHandler(address(0), CallType.wrap(0x00));
+
+    // Remove selector from fallbackSelectors via swap-and-pop
+    uint256 len = ds.fallbackSelectors.length;
+    for (uint256 i = 0; i < len; i++) {
+      if (ds.fallbackSelectors[i] == selector) {
+        ds.fallbackSelectors[i] = ds.fallbackSelectors[len - 1];
+        ds.fallbackSelectors.pop();
+        break;
+      }
+    }
+
+    (bool success, bytes memory returnData) = fallbackHandler.excessivelySafeCall(
+      gasleft(), 0, 0, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:])
+    );
+    if (!success) {
+      emit ExternalCallFailed(
+        fallbackHandler, abi.encodeWithSelector(IModule.onUninstall.selector, data[4:]), returnData
+      );
+    }
   }
 
   /// @dev Installs a pre-validation hook module, ensuring no other pre-validation hooks are installed before proceeding.
@@ -389,7 +497,9 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     address currentPreValidationHook = _getPreValidationHook(preValidationHookType);
     if (currentPreValidationHook != address(0)) revert PrevalidationHookAlreadyInstalled(currentPreValidationHook);
     _setPreValidationHook(preValidationHookType, preValidationHook);
-    IModule(preValidationHook).onInstall(data);
+    if (data.length > 0) {
+      IModule(preValidationHook).onInstall(data);
+    }
   }
 
   /// @dev Uninstalls a pre-validation hook module
@@ -401,28 +511,21 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
     uint256 hookType,
     bytes calldata data
   ) internal virtual {
-    // Review
-    // Check if the hook is installed according to supplied type
-    // Check if the hook is one of the allowed types
-    // IModule(preValidationHook).onUninstall(data);
     _setPreValidationHook(hookType, address(0));
+    try IModule(preValidationHook).onUninstall(data) {}
+    catch {
+      emit PreValidationHookUninstallFailed(preValidationHook, data);
+    }
   }
 
-  // Review: _tryUninstallPreValidationHook
-  function _tryUninstallPreValidationHook(address hook, uint256 hookType) internal virtual {
+  function _uninstallPreValidationHook(address hook, uint256 hookType) internal virtual {
     if (hook == address(0)) return;
     if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
-      try _getAccountStorage().preValidationHookERC1271.onUninstall('') {}
-      catch {
-        emit PreValidationHookUninstallFailed(hook, '');
-      }
       _setPreValidationHook(hookType, address(0));
+      emit ModuleUninstalled(hookType, hook);
     } else if (hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
-      try _getAccountStorage().preValidationHookERC4337.onUninstall('') {}
-      catch {
-        emit PreValidationHookUninstallFailed(hook, '');
-      }
       _setPreValidationHook(hookType, address(0));
+      emit ModuleUninstalled(hookType, hook);
     } else {
       revert InvalidHookType(hookType);
     }
@@ -486,6 +589,40 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
       else if (theType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271 || theType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
         _installPreValidationHook(theType, module, initDatas[i]);
       }
+    }
+  }
+
+  /// @notice Installs an interface to the smart account.
+  /// @param interfaceId The id of the interface to install.
+  function _installInterface(bytes4 interfaceId) internal virtual {
+    AccountStorage storage ds = _getAccountStorage();
+    ds.supportedIfaces[interfaceId] = true;
+    ds.installedIfaces.push(interfaceId);
+    emit InterfaceInstalled(interfaceId);
+  }
+
+  /// @notice Uninstalls an interface from the smart account.
+  /// @param interfaceId The id of the interface to uninstall.
+  function _uninstallInterface(bytes4 interfaceId) internal virtual {
+    AccountStorage storage ds = _getAccountStorage();
+    ds.supportedIfaces[interfaceId] = false;
+    // Remove interfaceId from installedIfaces via swap-and-pop
+    uint256 len = ds.installedIfaces.length;
+    for (uint256 i = 0; i < len; i++) {
+      if (ds.installedIfaces[i] == interfaceId) {
+        ds.installedIfaces[i] = ds.installedIfaces[len - 1];
+        ds.installedIfaces.pop();
+        break;
+      }
+    }
+    emit InterfaceUninstalled(interfaceId);
+  }
+
+  /// @notice Installs multiple interfaces to the smart account.
+  /// @param interfaceIds The ids of the interfaces to install.
+  function _installInterfaces(bytes4[] calldata interfaceIds) internal virtual {
+    for (uint256 i = 0; i < interfaceIds.length; i++) {
+      _installInterface(interfaceIds[i]);
     }
   }
 
@@ -774,8 +911,8 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManagerEventsAndEr
       // 0xf23a6e61: `onERC1155Received(address,address,uint256,uint256,bytes)`.
       // 0xbc197c81: `onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)`.
       if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) {
-        mstore(0x20, s) // Store `msg.sig`.
-        return(0x3c, 0x20) // Return `msg.sig`.
+        mstore(0x00, shl(224, s)) // Store msg.sig left-aligned in scratch space memory[0:32]
+        return(0x00, 0x20) // Return clean 32-byte value for msg.sig
       }
     }
     // if there was no handler and it is not the onERCXXXReceived call, revert

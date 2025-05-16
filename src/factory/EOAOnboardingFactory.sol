@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.29;
 
-import {BootstrapLib} from '../lib/BootstrapLib.sol';
-
 import {ProxyLib} from '../lib/ProxyLib.sol';
 import {Bootstrap, BootstrapConfig} from '../utils/Bootstrap.sol';
 import {Stakeable} from '../utils/Stakeable.sol';

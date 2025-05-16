@@ -2,15 +2,14 @@
 pragma solidity ^0.8.29;
 
 import {BaseAccount} from './core/BaseAccount.sol';
-
 import {ERC7779Adapter} from './core/ERC7779Adapter.sol';
 import {ExecutionHelper} from './core/ExecutionHelper.sol';
 import {ModuleManager} from './core/ModuleManager.sol';
+import {IERC7579Account} from './interfaces/IERC7579Account.sol';
 import {IValidator} from './interfaces/IERC7579Module.sol';
 import {IStartaleSmartAccount} from './interfaces/IStartaleSmartAccount.sol';
+import {IAccountConfig} from './interfaces/core/IAccountConfig.sol';
 import {ExecutionLib} from './lib/ExecutionLib.sol';
-import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
-
 import {Initializable} from './lib/Initializable.sol';
 import {
   CALLTYPE_BATCH,
@@ -24,6 +23,7 @@ import {
   ModeLib
 } from './lib/ModeLib.sol';
 import {NonceLib} from './lib/NonceLib.sol';
+import {ACCOUNT_STORAGE_LOCATION} from './types/Constants.sol';
 import {
   MODULE_TYPE_EXECUTOR,
   MODULE_TYPE_FALLBACK,
@@ -36,9 +36,12 @@ import {
   VALIDATION_FAILED,
   VALIDATION_SUCCESS
 } from './types/Constants.sol';
-
 import {EmergencyUninstall} from './types/Structs.sol';
 import {PackedUserOperation} from '@account-abstraction/interfaces/PackedUserOperation.sol';
+import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
+import {IERC1155Receiver} from '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
+import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {SENTINEL, SentinelListLib, ZERO_ADDRESS} from 'sentinellist/SentinelList.sol';
 import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
 
@@ -49,6 +52,7 @@ import {UUPSUpgradeable} from 'solady/utils/UUPSUpgradeable.sol';
 /// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ on which this implementation is highly based on.
 contract StartaleSmartAccount is
   IStartaleSmartAccount,
+  IERC165,
   BaseAccount,
   ExecutionHelper,
   ModuleManager,
@@ -105,12 +109,7 @@ contract StartaleSmartAccount is
     address validator;
     PackedUserOperation memory userOp = op;
 
-    if (op.nonce.isValidateMode()) {
-      // do nothing special. This is introduced
-      // to quickly identify the most commonly used
-      // mode which is validate mode
-      // and avoid checking two above conditions
-    } else if (op.nonce.isModuleEnableMode()) {
+    if (op.nonce.isModuleEnableMode()) {
       // if it is module enable mode, we need to enable the module first
       // and get the cleaned signature
       userOp.signature = _enableMode(userOpHash, op.signature);
@@ -120,7 +119,7 @@ contract StartaleSmartAccount is
     validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
   }
 
-  /// @notice Executes transactions in single or batch modes as specified by the execution mode.
+  /// @notice Executes transactions in single or batch modes as specified g by the execution mode.
   /// @param mode The execution mode detailing how transactions should be handled (single, batch, default, try/catch).
   /// @param executionCalldata The encoded transaction data to execute.
   /// @dev This function handles transaction execution flexibility and is protected by the `onlyEntryPoint` modifier.
@@ -166,7 +165,7 @@ contract StartaleSmartAccount is
   /// @dev Only callable by the EntryPoint. Decodes the user operation calldata, skipping the first four bytes, and executes the inner call.
   function executeUserOp(PackedUserOperation calldata userOp, bytes32) external payable virtual onlyEntryPoint withHook {
     bytes calldata callData = userOp.callData[4:];
-    (bool success, bytes memory innerCallRet) = address(this).delegatecall(callData);
+    (bool success,) = address(this).delegatecall(callData);
     if (!success) {
       revert ExecutionFailed();
     }
@@ -191,6 +190,27 @@ contract StartaleSmartAccount is
   ) external payable onlyEntryPointOrSelf {
     _installModule(moduleTypeId, module, initData);
     emit ModuleInstalled(moduleTypeId, module);
+  }
+
+  /// @notice Installs an interface to the smart account.
+  /// @param interfaceId The id of the interface to install.
+  /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
+  function installInterface(bytes4 interfaceId) external payable onlyEntryPointOrSelf {
+    _installInterface(interfaceId);
+  }
+
+  /// @notice Installs multiple interfaces to the smart account.
+  /// @param interfaceIds The ids of the interfaces to install.
+  /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
+  function installInterfaces(bytes4[] calldata interfaceIds) external payable onlyEntryPointOrSelf {
+    _installInterfaces(interfaceIds);
+  }
+
+  /// @notice Uninstalls an interface from the smart account.
+  /// @param interfaceId The id of the interface to uninstall.
+  /// @dev This function can only be called by the EntryPoint or the account itself for security reasons.
+  function uninstallInterface(bytes4 interfaceId) external payable onlyEntryPointOrSelf {
+    _uninstallInterface(interfaceId);
   }
 
   /// @notice Uninstalls a module from the smart account.
@@ -305,18 +325,21 @@ contract StartaleSmartAccount is
     }
   }
 
-  /// @dev Uninstalls all validators, executors, hooks, and pre-validation hooks.
-  /// Review: _onRedelegation
+  /// @dev Uninstalls all validators, executors, hooks, fallbacks, and pre-validation hooks.
+  /// @notice It is worth noting that, onRedelegation() does not obligate the account to completely wipe out it’s storage.
+  /// @notice It is an optional action for the account where it could uninitialize the storage variables as much as it can to provide clean storage for new wallet.
   function _onRedelegation() internal override {
-    _tryUninstallValidators();
-    _tryUninstallExecutors();
-    _tryUninstallHook(_getHook());
-    _tryUninstallPreValidationHook(
+    _uninstallAllValidators();
+    _uninstallAllExecutors();
+    _uninstallHook(_getHook());
+    _uninstallPreValidationHook(
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271), MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
     );
-    _tryUninstallPreValidationHook(
+    _uninstallPreValidationHook(
       _getPreValidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337), MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
     );
+    _uninstallAllFallbacks();
+    _uninstallAllInterfaces();
     _initSentinelLists();
   }
 
@@ -330,6 +353,7 @@ contract StartaleSmartAccount is
     // Handle potential ERC7739 support detection request
     if (signature.length == 0) {
       // Forces the compiler to optimize for smaller bytecode size.
+      // checking if the hash equals to 0x7739773977397739773977397739773977397739773977397739773977397739
       if (uint256(hash) == (~signature.length / 0xffff) * 0x7739) {
         return checkERC7739Support(hash, signature);
       }
@@ -379,6 +403,19 @@ contract StartaleSmartAccount is
     // Return true if both the call type and execution type are supported.
     return (callType == CALLTYPE_SINGLE || callType == CALLTYPE_BATCH || callType == CALLTYPE_DELEGATECALL)
       && (execType == EXECTYPE_DEFAULT || execType == EXECTYPE_TRY);
+  }
+
+  function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
+    AccountStorage storage ds = _getAccountStorage();
+    if (
+      interfaceId == type(IERC721Receiver).interfaceId || interfaceId == type(IERC1155Receiver).interfaceId
+        || interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC1271).interfaceId
+        || interfaceId == type(IStartaleSmartAccount).interfaceId || interfaceId == type(IERC7579Account).interfaceId
+        || interfaceId == type(IAccountConfig).interfaceId
+    ) {
+      return true;
+    }
+    return ds.supportedIfaces[interfaceId];
   }
 
   /// @notice Determines whether a module is installed on the smart account.

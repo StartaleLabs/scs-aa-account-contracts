@@ -37,6 +37,20 @@ interface IModuleManagerEventsAndErrors {
   /// @param data The data of the hook.
   event HookUninstallFailed(address hook, bytes data);
 
+  /// @notice Emitted when an external call fails.
+  /// @param target The address of the target.
+  /// @param callData The data of the call.
+  /// @param returnData The return data of the call.
+  event ExternalCallFailed(address target, bytes callData, bytes returnData);
+
+  /// @notice Emitted when an interface is installed.
+  /// @param interfaceId The id of the interface.
+  event InterfaceInstalled(bytes4 interfaceId);
+
+  /// @notice Emitted when an interface is uninstalled.
+  /// @param interfaceId The id of the interface.
+  event InterfaceUninstalled(bytes4 interfaceId);
+
   /// @notice Thrown when attempting to remove the last validator.
   error CanNotRemoveLastValidator();
 

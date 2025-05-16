@@ -63,6 +63,12 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    */
   event OwnerRegistered(address indexed account, address indexed owner);
 
+  /**
+   * @notice Emitted when an owner is removed for an account
+   * @param account The smart account address
+   */
+  event OwnerRemoved(address indexed account);
+
   // Storage
   /**
    * @notice Mapping of smart account addresses to their respective owner addresses
@@ -108,6 +114,7 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
     }
 
     delete smartAccountOwners[msg.sender];
+    emit OwnerRemoved(msg.sender);
     _safeSenders.removeAll(msg.sender);
   }
 
@@ -132,12 +139,12 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    * @param _newOwner The address of the new owner
    */
   function transferOwnership(address _newOwner) external {
-    // Review: other checks on newOwner address
     if (_newOwner == address(0)) {
       revert OwnerCannotBeZeroAddress();
     }
 
     smartAccountOwners[msg.sender] = _newOwner;
+    emit OwnerRegistered(msg.sender, _newOwner);
   }
 
   /**
@@ -173,6 +180,8 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
 
   /**
    * @notice ISessionValidator interface for smart session
+   * @notice This function is meant to be used as a stateless validator's sig verification function,
+   * where sig is provided along with an onwer to check algorithm and verify agaisnt each other.
    * @param _hash The hash of the data to validate
    * @param _sig The signature data
    * @param _data The data to validate against (owner address in this case)
@@ -309,7 +318,8 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    * @return The recovered signer address
    */
   function _recoverSigner(bytes32 _hash, bytes calldata _signature) internal view returns (address) {
-    return _hash.tryRecoverCalldata(_signature);
+    // Use recoverCalldata which reverts on invalid signature, preventing address(0) bypass.
+    return _hash.recoverCalldata(_signature);
   }
 
   /**

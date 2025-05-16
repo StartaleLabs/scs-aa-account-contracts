@@ -32,7 +32,7 @@ import {MockValidator} from '../mocks/MockValidator.sol';
 import {EOAOnboardingFactory} from '../../../src/factory/EOAOnboardingFactory.sol';
 import {StartaleAccountFactory} from '../../../src/factory/StartaleAccountFactory.sol';
 
-import {BootstrapLib} from '../../../src/lib/BootstrapLib.sol';
+import {BootstrapLib} from './BootstrapLib.sol';
 
 import {ECDSAValidator} from '../../../src/modules/validators/ECDSAValidator.sol';
 import '../../../src/types/Constants.sol';

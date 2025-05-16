@@ -114,7 +114,7 @@ abstract contract ExecutionHelper is IExecutionHelper {
       exec = executions[i];
       bool success;
       (success, result[i]) = _tryExecute(exec.target, exec.value, exec.callData);
-      if (!success) emit TryExecuteUnsuccessful(exec.callData, result[i]);
+      if (!success) emit TryExecuteUnsuccessful(exec.target, exec.callData, result[i]);
     }
   }
 
@@ -183,7 +183,7 @@ abstract contract ExecutionHelper is IExecutionHelper {
       _executeNoReturndata(target, value, callData);
     } else if (execType == EXECTYPE_TRY) {
       (bool success, bytes memory result) = _tryExecute(target, value, callData);
-      if (!success) emit TryExecuteUnsuccessful(callData, result);
+      if (!success) emit TryExecuteUnsuccessful(target, callData, result);
     } else {
       revert UnsupportedExecType(execType);
     }
@@ -230,7 +230,7 @@ abstract contract ExecutionHelper is IExecutionHelper {
       returnData[0] = _execute(target, value, callData);
     } else if (execType == EXECTYPE_TRY) {
       (success, returnData[0]) = _tryExecute(target, value, callData);
-      if (!success) emit TryExecuteUnsuccessful(callData, returnData[0]);
+      if (!success) emit TryExecuteUnsuccessful(target, callData, returnData[0]);
     } else {
       revert UnsupportedExecType(execType);
     }

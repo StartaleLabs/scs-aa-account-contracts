@@ -151,7 +151,9 @@ contract TestExecution_TryExecuteSingle is TestExecutionBase {
 
     // Expect the TryExecuteUnsuccessful event to be emitted with specific data
     vm.expectEmit(true, true, true, true);
-    emit TryExecuteUnsuccessful(execution[0].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector));
+    emit TryExecuteUnsuccessful(
+      address(counter), execution[0].callData, abi.encodeWithSelector(Counter.CounterRevertOperation.selector)
+    );
 
     ENTRYPOINT.handleOps(userOps, payable(BOB.addr));
 

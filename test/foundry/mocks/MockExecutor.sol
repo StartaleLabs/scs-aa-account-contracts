@@ -18,9 +18,10 @@ import {
   ModeLib
 } from '../../../src/lib/ModeLib.sol';
 import {MODE_DEFAULT, ModePayload} from '../../../src/lib/ModeLib.sol';
-import {EncodedModuleTypes} from '../../../src/lib/ModuleTypeLib.sol';
+
 import {MODULE_TYPE_EXECUTOR} from '../../../src/types/Constants.sol';
 import '../../../src/types/Structs.sol';
+import {EncodedModuleTypes} from '../utils/ModuleTypeLib.sol';
 
 contract MockExecutor is IExecutor {
   event ExecutorOnInstallCalled(bytes32 dataFirstWord);

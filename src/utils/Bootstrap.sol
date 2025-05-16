@@ -229,4 +229,21 @@ contract Bootstrap is ModuleManager {
     name = 'StartaleAccountBootstrap';
     version = '0.0.1';
   }
+
+  // required implementations. Are not used.
+  function installModule(uint256 moduleTypeId, address module, bytes calldata initData) external payable override {
+    // do nothing
+  }
+
+  function uninstallModule(uint256 moduleTypeId, address module, bytes calldata deInitData) external payable override {
+    // do nothing
+  }
+
+  function isModuleInstalled(
+    uint256 moduleTypeId,
+    address module,
+    bytes calldata additionalContext
+  ) external view override returns (bool installed) {
+    return false;
+  }
 }

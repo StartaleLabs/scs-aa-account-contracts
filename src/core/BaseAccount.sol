@@ -44,7 +44,7 @@ contract BaseAccount is IBaseAccount {
     assembly {
       if missingAccountFunds {
         // Ignore failure (it's EntryPoint's job to verify, not the account's).
-        pop(call(gas(), caller(), missingAccountFunds, codesize(), 0x00, codesize(), 0x00))
+        pop(call(gas(), caller(), missingAccountFunds, 0, 0, 0, 0))
       }
     }
   }
@@ -68,14 +68,19 @@ contract BaseAccount is IBaseAccount {
     address entryPointAddress = _ENTRYPOINT;
     assembly {
       let freeMemPtr := mload(0x40) // Store the free memory pointer.
-      mstore(0x14, to) // Store the `to` argument.
-      mstore(0x34, amount) // Store the `amount` argument.
-      mstore(0x00, 0x205c2878000000000000000000000000) // `withdrawTo(address,uint256)`.
-      if iszero(call(gas(), entryPointAddress, 0, 0x10, 0x44, codesize(), 0x00)) {
-        returndatacopy(freeMemPtr, 0x00, returndatasize())
-        revert(freeMemPtr, returndatasize())
+
+      mstore(freeMemPtr, shl(224, 0x205c2878)) // `withdrawTo(address,uint256)` selector
+      mstore(add(freeMemPtr, 0x04), to) // Store the `to` argument.
+      mstore(add(freeMemPtr, 0x24), amount) // Store the `amount` argument.
+
+      if iszero(call(gas(), entryPointAddress, 0, freeMemPtr, 0x44, 0, 0)) {
+        let rdsize := returndatasize()
+        returndatacopy(freeMemPtr, 0, rdsize)
+        revert(freeMemPtr, rdsize)
       }
-      mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.
+
+      // Update the free memory pointer (ptr + 0x44)
+      mstore(0x40, add(freeMemPtr, 0x44))
     }
   }
 
