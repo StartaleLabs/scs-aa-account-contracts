@@ -14,7 +14,7 @@ contract TestAccountConfig_AccountId is TestBase {
 
   /// @notice Tests if the account ID returns the expected value
   function test_WhenCheckingTheAccountID() external {
-    string memory expected = 'startale.smart-account.0.0.1';
+    string memory expected = 'startale.smart-account.1.0.0';
     assertEq(ACCOUNT_IMPLEMENTATION.accountId(), expected, 'AccountConfig should return the expected account ID.');
   }
 }

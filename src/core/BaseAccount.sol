@@ -11,7 +11,7 @@ import {IEntryPoint} from '@account-abstraction/interfaces/IEntryPoint.sol';
 /// Special thanks to the Biconomy team for https://github.com/bcnmy/nexus/ and ERC7579 reference implementation on which this implementation is highly based on.
 contract BaseAccount is IBaseAccount {
   /// @notice Identifier for this implementation on the network
-  string internal constant _ACCOUNT_IMPLEMENTATION_ID = 'startale.smart-account.0.0.1';
+  string internal constant _ACCOUNT_IMPLEMENTATION_ID = 'startale.smart-account.1.0.0';
 
   /// @notice The canonical address for the ERC4337 EntryPoint contract, version 0.7.
   /// This address is consistent across all supported networks.

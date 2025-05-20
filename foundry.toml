@@ -16,7 +16,7 @@ solc_version = '0.8.29'
 optimizer = true
 via_ir = true
 evm_version = "prague"  # See https://www.evmdiff.com/features?name=PUSH0&kind=opcode
-optimizer_runs = 10_000
+optimizer_runs = 999
 bytecode_hash = "none"
 cbor_metadata = false
 

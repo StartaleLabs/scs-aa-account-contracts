@@ -227,7 +227,7 @@ contract Bootstrap is ModuleManager {
   /// @dev EIP712 domain name and version.
   function _domainNameAndVersion() internal pure override returns (string memory name, string memory version) {
     name = 'StartaleAccountBootstrap';
-    version = '0.0.1';
+    version = '1.0.0';
   }
 
   // required implementations. Are not used.

@@ -209,7 +209,7 @@ contract TestAccountWithECDSAValidator is TestBase {
   /// @notice Tests the version function to return the correct contract version
   function test_Version() public {
     string memory contractVersion = validator.version();
-    assertEq(contractVersion, '0.0.1', "Contract version should be '0.0.1'");
+    assertEq(contractVersion, '1.0.0', "Contract version should be '1.0.0'");
   }
 
   /// @notice Tests the isModuleType function to return the correct module type
@@ -407,7 +407,7 @@ contract TestAccountWithECDSAValidator is TestBase {
       abi.encode(
         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
         keccak256('Startale'),
-        keccak256('0.0.1'),
+        keccak256('1.0.0'),
         block.chainid,
         address(BOB_ACCOUNT)
       )

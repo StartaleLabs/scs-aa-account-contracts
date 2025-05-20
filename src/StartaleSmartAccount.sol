@@ -528,6 +528,6 @@ contract StartaleSmartAccount is
   /// @dev EIP712 domain name and version.
   function _domainNameAndVersion() internal pure override returns (string memory name, string memory version) {
     name = 'Startale';
-    version = '0.0.1';
+    version = '1.0.0';
   }
 }
