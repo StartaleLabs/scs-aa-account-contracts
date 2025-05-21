@@ -3,8 +3,6 @@ pragma solidity ^0.8.29;
 
 import {IERC7779} from '../interfaces/IERC7779.sol';
 
-// Note: To inherit from when we are ready to utilize 7702 fully.
-
 abstract contract ERC7779Adapter is IERC7779 {
   error NonAuthorizedOnRedelegationCaller();
 

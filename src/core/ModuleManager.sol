@@ -650,12 +650,8 @@ abstract contract ModuleManager is AllStorage, EIP712, IModuleManager {
   function _getPreValidationHook(uint256 preValidationHookType) internal view returns (address preValidationHook) {
     if (preValidationHookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
       preValidationHook = address(_getAccountStorage().preValidationHookERC1271);
-      // Review
-      // We should allow to send 0 as this is being consumed in modifier functions
-      // if(preValidationHook == address(0)) revert PrevalidationHookNotInstalled();
     } else if (preValidationHookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
       preValidationHook = address(_getAccountStorage().preValidationHookERC4337);
-      // if(preValidationHook == address(0)) revert PrevalidationHookNotInstalled();
     } else {
       revert InvalidHookType(preValidationHookType);
     }
