@@ -239,7 +239,7 @@ contract ECDSAValidator is IValidator, ERC7739Validator {
    * @return The version of the module
    */
   function version() external pure returns (string memory) {
-    return '0.0.1';
+    return '1.0.0';
   }
 
   /**
