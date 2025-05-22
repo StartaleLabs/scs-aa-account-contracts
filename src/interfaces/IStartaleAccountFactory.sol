@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 /// @title Interface for Generic Startale Account Factory
 /// @notice Interface that provides the essential structure for account factories.

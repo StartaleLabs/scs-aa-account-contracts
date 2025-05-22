@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {IValidator} from '../../../src/interfaces/IERC7579Module.sol';
 import {MODULE_TYPE_VALIDATOR, VALIDATION_FAILED, VALIDATION_SUCCESS} from '../../../src/types/Constants.sol';

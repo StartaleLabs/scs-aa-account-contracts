@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {ECDSAValidator} from '../../../../../src/modules/validators/ECDSAValidator.sol';
 import '../../../mocks/MockValidator7739.sol';

@@ -9,9 +9,9 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.29",
+    version: "0.8.30",
     settings: {
-      evmVersion: "prague",
+      evmVersion: "cancun",
       viaIR: true,
       optimizer: {
         enabled: true,
@@ -25,7 +25,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 1337,
-      hardfork: "prague"
+      hardfork: "cancun"
     },
     minato: {
       url: process.env.MINATO_RPC_URL || "https://rpc.minato.network",

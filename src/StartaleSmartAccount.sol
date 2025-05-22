@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {BaseAccount} from './core/BaseAccount.sol';
 import {ERC7779Adapter} from './core/ERC7779Adapter.sol';

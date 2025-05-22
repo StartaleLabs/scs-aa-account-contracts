@@ -12,10 +12,10 @@ sort_imports = true
 src = "src"
 out = "out"
 libs = ['node_modules', 'lib']
-solc_version = '0.8.29'
+solc_version = '0.8.30'
 optimizer = true
 via_ir = true
-evm_version = "prague"  # See https://www.evmdiff.com/features?name=PUSH0&kind=opcode
+evm_version = "cancun"  # See https://www.evmdiff.com/features?name=PUSH0&kind=opcode
 optimizer_runs = 499
 bytecode_hash = "none"
 cbor_metadata = false

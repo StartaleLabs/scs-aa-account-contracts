@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {IStartaleAccountFactory} from '../interfaces/IStartaleAccountFactory.sol';
 import {ProxyLib} from '../lib/ProxyLib.sol';

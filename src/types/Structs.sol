@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 /// @title Execution
 /// @notice Struct to encapsulate execution data for a transaction

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 /// @title BaseAccount
 /// @notice Interface for the BaseAccount functionalities compliant with ERC-7579 and ERC-4337.
