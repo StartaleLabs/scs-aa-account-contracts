@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {CallType} from '../../lib/ModeLib.sol';
 import {IHook, IPreValidationHookERC1271, IPreValidationHookERC4337} from '../IERC7579Module.sol';

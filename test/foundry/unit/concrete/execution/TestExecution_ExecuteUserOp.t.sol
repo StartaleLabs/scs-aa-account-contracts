@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {MODE_VALIDATION} from '../../../../../src/types/Constants.sol';
 import '../../../shared/TestExecutionBase.t.sol';

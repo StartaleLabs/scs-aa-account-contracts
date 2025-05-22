@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {IModuleManager} from '../../../../../src/interfaces/core/IModuleManager.sol';
 import {MockHook} from '../../../mocks/MockHook.sol';

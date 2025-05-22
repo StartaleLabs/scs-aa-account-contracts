@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {
   IHook, IPreValidationHookERC1271, IPreValidationHookERC4337
@@ -280,7 +280,6 @@ contract TestEIP7702 is TestBase {
     assertTrue(valueTarget.balance == value);
   }
 
-  // Note: only works on prague hardfork
   function test_amIERC7702_success() public {
     Exposed7702SmartAccount exposed7702 = new Exposed7702SmartAccount(
       address(ENTRYPOINT), address(DEFAULT_VALIDATOR_MODULE), abi.encodePacked(address(0xEeEe))

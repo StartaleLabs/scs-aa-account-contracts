@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {IFallback} from '../../../src/interfaces/IERC7579Module.sol';
 import {MODULE_TYPE_FALLBACK} from '../../../src/types/Constants.sol';

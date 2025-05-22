@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {ProxyLib} from '../lib/ProxyLib.sol';
 import {Bootstrap, BootstrapConfig} from '../utils/Bootstrap.sol';

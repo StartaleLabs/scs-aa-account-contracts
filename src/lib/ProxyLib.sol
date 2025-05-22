@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 import {IStartaleSmartAccount} from '../interfaces/IStartaleSmartAccount.sol';
 import {AccountProxy} from '../utils/AccountProxy.sol';

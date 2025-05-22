@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 
 // Magic value for ERC-1271 valid signature
 bytes4 constant ERC1271_MAGICVALUE = 0x1626ba7e;
