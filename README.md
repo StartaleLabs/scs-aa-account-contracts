@@ -124,10 +124,11 @@ source .env
 
 ### Deploy
 
+```
 forge script script/DeployStartaleAccountFactoryCreate3.s.sol:DeployStartaleAccountFactoryCreate3 --rpc-url <RPC_URL> --broadcast --private-key <PRIVATE_KEY>
 ( and so on for other contracts)
-
 ```
+
 
 ## Architecture
 
