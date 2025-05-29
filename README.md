@@ -1,3 +1,167 @@
+[![Startale](https://img.shields.io/badge/Made_with_%F0%9F%8D%8A_by-Startale-ff4e17?style=flat)](https://startale.com) [![License MIT](https://img.shields.io/badge/License-MIT-blue?&style=flat)](./LICENSE) [![Foundry](https://img.shields.io/badge/Built%20with-Foundry-FFBD10.svg)](https://getfoundry.sh/)
+
+# Startale Smart Account Contracts 🚀
+
+A modular smart account implementation compliant with ERC-4337 and ERC-7579 standards, built with Foundry.
+
+## 📚 Table of Contents
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Core Components](#core-components)
+- [Development](#development)
+  - [Build](#build)
+  - [Testing](#testing)
+  - [Coverage](#coverage)
+- [Deployment](#deployment)
+- [Architecture](#architecture)
+- [Security](#security)
+- [License](#license)
+
+## Features
+
+<dl>
+  <dt>ERC-4337 & ERC-7579 Compliance</dt>
+  <dd>Full implementation of account abstraction standards with modular architecture.</dd>
+
+  <dt>Modular Design</dt>
+  <dd>Support for validators, executors, hooks, and fallback modules with easy extensibility.</dd>
+
+  <dt>Factory Pattern</dt>
+  <dd>Deterministic deployment of smart accounts with customizable initialization.</dd>
+
+  <dt>Advanced Testing</dt>
+  <dd>Comprehensive test suite including unit, integration, and property-based fuzzing tests.</dd>
+
+  <dt>Gas Optimization</dt>
+  <dd>Optimized for gas efficiency with support for both standard and IR-based compilation.</dd>
+
+  <dt>Security Features</dt>
+  <dd>Built-in security patterns including access control, module validation, and upgrade safety.</dd>
+</dl>
+
+## Getting Started
+
+### Prerequisites
+
+- Foundry (latest version)
+- Node.js (v18.x or later) preferred: >= v23.7.0
+- Yarn (or npm)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/startale/scs-aa-account-contracts.git
+cd scs-aa-account-contracts
+```
+
+2. Install dependencies:
+```bash
+yarn install
+git submodule update --init --recursive
+```
+
+3. Copy and configure environment variables:
+```bash
+cp .env.example .env
+```
+
+## Core Components
+
+- **BaseAccount**: Core implementation of ERC-4337 account abstraction
+- **StartaleSmartAccount**: Main smart account implementation with ERC-7579 compliance
+- **ModuleManager**: Handles module installation, removal, and validation
+- **Factory Contracts**: 
+  - StartaleAccountFactory: Generic factory for custom deployments
+  - EOAOnboardingFactory: Specialized factory for EOA-based accounts
+
+## Development
+
+### Build
+
+Standard build:
+```bash
+yarn build
+```
+
+Optimized build (via IR):
+```bash
+yarn build:optimized
+```
+
+### Testing
+
+Run all tests:
+```bash
+yarn test
+```
+
+Run specific test suites:
+```bash
+yarn test:unit        # Unit tests
+yarn test:integration # Integration tests
+yarn test:unit:deep   # Deep fuzzing tests
+```
+
+### Coverage
+
+Generate coverage report:
+```bash
+yarn coverage
+```
+
+## Deployment
+
+### Setup
+
+1. Configure environment variables:
+```bash
+source .env
+```
+
+### Deploy
+
+forge script script/DeployStartaleAccountFactoryCreate3.s.sol:DeployStartaleAccountFactoryCreate3 --rpc-url <RPC_URL> --broadcast --private-key <PRIVATE_KEY>
+( and so on for other contracts)
+
+```
+
+## Architecture
+
+The smart account implementation follows a modular architecture:
+
+1. **Core Layer**
+   - Base account abstraction
+   - Module management
+   - Storage management
+
+2. **Module Layer**
+   - Validators (e.g., ECDSA)
+   - Executors
+   - Hooks
+   - Fallback handlers
+
+3. **Factory Layer**
+   - Deterministic deployment
+   - Custom initialization
+   - EOA onboarding
+
+## Security
+
+- ERC-7201 namespaced storage
+- UUPS upgrade pattern
+- Module validation and isolation
+- Access control mechanisms
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## Reference 
+
 <img src="https://raw.githubusercontent.com/defi-wonderland/brand/v1.0.0/external/solidity-foundry-boilerplate-banner.png" alt="wonderland banner" align="center" />
 <br />
 
@@ -5,136 +169,6 @@
 <div align="center">A highly scalable foundation focused on DX and best practices</div>
 
 <br />
-
-## Features
-
-<dl>
-  <dt>Sample contracts</dt>
-  <dd>Basic Greeter contract with an external interface.</dd>
-
-  <dt>Foundry setup</dt>
-  <dd>Foundry configuration with multiple custom profiles and remappings.</dd>
-
-  <dt>Deployment scripts</dt>
-  <dd>Sample scripts to deploy contracts on both mainnet and testnet.</dd>
-
-  <dt>Sample Integration, Unit, Property-based fuzzed and symbolic tests</dt>
-  <dd>Example tests showcasing mocking, assertions and configuration for mainnet forking. As well it includes everything needed in order to check code coverage.</dd>
-  <dd>Unit tests are built based on the <a href="https://twitter.com/PaulRBerg/status/1682346315806539776">Branched-Tree Technique</a>, using <a href="https://github.com/alexfertel/bulloak">Bulloak</a>.
-  <dd>Formal verification and property-based fuzzing are achieved with <a href="https://github.com/a16z/halmos">Halmos</a> and <a href="https://github.com/crytic/medusa">Medusa</a> (resp.).
-
-  <dt>Linter</dt>
-  <dd>Simple and fast solidity linting thanks to forge fmt.</dd>
-  <dd>Find missing natspec automatically.</dd>
-
-  <dt>Github workflows CI</dt>
-  <dd>Run all tests and see the coverage as you push your changes.</dd>
-  <dd>Export your Solidity interfaces and contracts as packages, and publish them to NPM.</dd>
-</dl>
-
-## Setup
-
-1. Install Foundry by following the instructions from [their repository](https://github.com/foundry-rs/foundry#installation).
-2. Copy the `.env.example` file to `.env` and fill in the variables.
-3. Install the dependencies by running: `yarn install`. In case there is an error with the commands, run `foundryup` and try them again.
-
-## Build
-
-The default way to build the code is suboptimal but fast, you can run it via:
-
-```bash
-yarn build
-```
-
-In order to build a more optimized code ([via IR](https://docs.soliditylang.org/en/v0.8.15/ir-breaking-changes.html#solidity-ir-based-codegen-changes)), run:
-
-```bash
-yarn build:optimized
-```
-
-## Running tests
-
-Unit tests should be isolated from any externalities, while Integration usually run in a fork of the blockchain. In this boilerplate you will find example of both.
-
-In order to run both unit and integration tests, run:
-
-```bash
-yarn test
-```
-
-In order to just run unit tests, run:
-
-```bash
-yarn test:unit
-```
-
-In order to run unit tests and run way more fuzzing than usual (5x), run:
-
-```bash
-yarn test:unit:deep
-```
-
-In order to just run integration tests, run:
-
-```bash
-yarn test:integration
-```
-
-In order to start the Medusa fuzzing campaign (requires [Medusa](https://github.com/crytic/medusa/blob/master/docs/src/getting_started/installation.md) installed), run:
-
-```bash
-yarn test:fuzz
-```
-
-In order to just run the symbolic execution tests (requires [Halmos](https://github.com/a16z/halmos/blob/main/README.md#installation) installed), run:
-
-```bash
-yarn test:symbolic
-```
-
-In order to check your current code coverage, run:
-
-```bash
-yarn coverage
-```
-
-<br>
-
-## Deploy & verify
-
-### Setup
-
-Configure the `.env` variables and source them:
-
-```bash
-source .env
-```
-
-Import your private keys into Foundry's encrypted keystore:
-
-```bash
-cast wallet import $MAINNET_DEPLOYER_NAME --interactive
-```
-
-```bash
-cast wallet import $SEPOLIA_DEPLOYER_NAME --interactive
-```
-
-### Sepolia
-
-```bash
-yarn deploy:sepolia
-```
-
-### Mainnet
-
-```bash
-yarn deploy:mainnet
-```
-
-The deployments are stored in ./broadcast
-
-See the [Foundry Book for available options](https://book.getfoundry.sh/reference/forge/forge-create.html).
 
 ## Export And Publish
 
@@ -169,6 +203,3 @@ Also, remember to update the `package_name` param to your package name:
 ```
 
 You can take a look at our [solidity-exporter-action](https://github.com/defi-wonderland/solidity-exporter-action) repository for more information and usage examples.
-
-## Licensing
-The primary license for the boilerplate is MIT, see [`LICENSE`](https://github.com/defi-wonderland/solidity-foundry-boilerplate/blob/main/LICENSE)
